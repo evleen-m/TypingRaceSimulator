@@ -11,14 +11,12 @@
  */
 public class Typist
 {
-    // Fields of class Typist
-    // Hint: you will need six fields. Think carefully about their types.
-    // One of them tracks how far along the passage the typist has reached.
-    // Another tracks whether the typist is currently burnt out.
-    // A third tracks HOW MANY turns of burnout remain (not just whether they are burnt out).
-    // The remaining three should be fairly obvious.
-
-
+    private String typistName;
+    private char typistSymbol;
+    private int progress;
+    private Boolean burntOut;
+    private int burntOutTurnsRemaining;
+    private double accuracyRating;
 
 
     // Constructor of class Typist
@@ -32,7 +30,12 @@ public class Typist
      */
     public Typist(char typistSymbol, String typistName, double typistAccuracy)
     {
-
+        this.typistName = typistName;
+        this.typistSymbol = typistSymbol;
+        this.progress = 0;
+        this.burntOut = false;
+        this.burntOutTurnsRemaining = 0;
+        this.accuracyRating = typistAccuracy;
     }
 
 
@@ -46,7 +49,8 @@ public class Typist
      */
     public void burnOut(int turns)
     {
-
+        this.burntOut = true;
+        this.burntOutTurnsRemaining = turns;
     }
 
     /**
@@ -56,7 +60,12 @@ public class Typist
      */
     public void recoverFromBurnout()
     {
-
+        if(burntOut){
+            burntOutTurnsRemaining--;
+            if(burntOutTurnsRemaining == 0){
+                burntOut = false;
+            }
+        }
     }
 
     /**
@@ -66,7 +75,7 @@ public class Typist
      */
     public double getAccuracy()
     {
-        return 0.0; // placeholder - replace with correct implementation
+        return accuracyRating; // placeholder - replace with correct implementation
     }
 
     /**
@@ -78,7 +87,7 @@ public class Typist
      */
     public int getProgress()
     {
-        return 0; // placeholder - replace with correct implementation
+        return progress; // placeholder - replace with correct implementation
     }
 
     /**
@@ -88,7 +97,7 @@ public class Typist
      */
     public String getName()
     {
-        return ""; // placeholder - replace with correct implementation
+        return typistName; // placeholder - replace with correct implementation
     }
 
     /**
@@ -98,7 +107,7 @@ public class Typist
      */
     public char getSymbol()
     {
-        return ' '; // placeholder - replace with correct implementation
+        return typistSymbol; // placeholder - replace with correct implementation
     }
 
     /**
@@ -109,7 +118,7 @@ public class Typist
      */
     public int getBurnoutTurnsRemaining()
     {
-        return 0; // placeholder - replace with correct implementation
+        return burntOutTurnsRemaining; // placeholder - replace with correct implementation
     }
 
     /**
@@ -118,7 +127,9 @@ public class Typist
      */
     public void resetToStart()
     {
-
+        progress = 0;
+        burntOut = false;
+        burntOutTurnsRemaining = 0;
     }
 
     /**
@@ -128,7 +139,7 @@ public class Typist
      */
     public boolean isBurntOut()
     {
-        return false; // placeholder - replace with correct implementation
+        return burntOut; // placeholder - replace with correct implementation
     }
 
     /**
@@ -137,7 +148,7 @@ public class Typist
      */
     public void typeCharacter()
     {
-
+        progress += 1;
     }
 
     /**
@@ -148,7 +159,12 @@ public class Typist
      */
     public void slideBack(int amount)
     {
-
+        if(progress >= amount){
+            progress -= amount;
+        }
+        else{
+            progress = 0;
+        }
     }
 
     /**
@@ -159,6 +175,15 @@ public class Typist
      */
     public void setAccuracy(double newAccuracy)
     {
+        if (newAccuracy < 0.0){
+            accuracyRating = 0.0;
+        }
+        else if (newAccuracy > 1.0){
+            accuracyRating = 1.0;
+        }
+        else{
+            accuracyRating = newAccuracy;
+        }
 
     }
 
@@ -169,7 +194,8 @@ public class Typist
      */
     public void setSymbol(char newSymbol)
     {
-
+        typistSymbol = newSymbol;
     }
+
 
 }

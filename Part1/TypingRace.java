@@ -82,6 +82,7 @@ public class TypingRace
         // (Ty was in a hurry here)
         seat1Typist.resetToStart();
         seat2Typist.resetToStart();
+        //missing seat3
 
         while (!finished)
         {
@@ -106,6 +107,7 @@ public class TypingRace
         }
 
         // TODO (Task 2a): Print the winner's name here
+
     }
 
     /**
