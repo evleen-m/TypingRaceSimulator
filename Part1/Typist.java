@@ -17,6 +17,7 @@ public class Typist
     private Boolean burntOut;
     private int burntOutTurnsRemaining;
     private double accuracyRating;
+    private boolean justMistyped;
 
 
     // Constructor of class Typist
@@ -36,10 +37,19 @@ public class Typist
         this.burntOut = false;
         this.burntOutTurnsRemaining = 0;
         this.accuracyRating = typistAccuracy;
+        this.justMistyped = false;
     }
 
 
     // Methods of class Typist
+    public void setJustMistyped(boolean justMistyped)
+    {
+        this.justMistyped = justMistyped;
+    }
+    public boolean hasJustMistyped()
+    {
+        return justMistyped;
+    }
 
     /**
      * Sets this typist into a burnout state for a given number of turns.
@@ -130,6 +140,7 @@ public class Typist
         progress = 0;
         burntOut = false;
         burntOutTurnsRemaining = 0;
+        justMistyped = false;
     }
 
     /**
