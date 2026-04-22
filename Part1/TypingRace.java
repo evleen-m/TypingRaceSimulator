@@ -6,12 +6,8 @@ import java.lang.Math;
  * A typing race simulation. Three typists race to complete a passage of text,
  * advancing character by character — or sliding backwards when they mistype.
  *
- * Originally writtwen by Ty Posaurus, who left this project to "focus on his
- * two-finger technique". He assured us the code was "basically done".
- * We have found evidence to the contrary.
- *
- * @author TyPosaurus
- * @version 0.7 (the other 0.3 is left as an exercise for the reader)
+ * @author Evleen Manghera
+ * @version 1
  */
 public class TypingRace
 {
@@ -20,15 +16,16 @@ public class TypingRace
     private int numberOfSeats;
 
     // Accuracy thresholds for mistype and burnout events
-    // (Ty tuned these values "by feel". They may need adjustment.)
     private static final double MISTYPE_BASE_CHANCE = 0.3;
-    private static final int    SLIDE_BACK_AMOUNT   = 2;
+    private static final int    SLIDE_BACK_AMOUNT   = 3;
     private static final int    BURNOUT_DURATION     = 3;
+
+    private int turnCount = 0;
 
     /**
      * Constructor for objects of class TypingRace.
      * Sets up the race with a passage of the given length.
-     * Initially there are no typists seated.
+     * Initially, there are no typists seated.
      *
      * @param passageLength the number of characters in the passage to type
      */
@@ -49,17 +46,20 @@ public class TypingRace
     }
 
     /**
-     * Seats a typist at the given seat number (1, 2, or 3).
+     * Seats a typist at the given seat number.
      *
      * @param theTypist  the typist to seat
-     * @param seatNumber the seat to place them in (1–3)
+     * @param seatNumber the seat in which to place them
      */
     public void addTypist(Typist theTypist, int seatNumber)
     {
+        //index 0 not used
         if (seatNumber == 0)
         {
             System.out.println("cannot seat typist at seat 0");
         }
+
+        //add typist to seat
         seats[seatNumber] = theTypist;
 
         if (seatNumber > numberOfSeats)
@@ -72,9 +72,6 @@ public class TypingRace
      * Starts the typing race.
      * All typists are reset to the beginning, then the simulation runs
      * turn by turn until one typist completes the full passage.
-     *
-     * Note from Ty: "I didn't bother printing the winner at the end,
-     * you can probably figure that out yourself."
      */
     public void startRace()
     {
@@ -86,8 +83,10 @@ public class TypingRace
             seats[i].resetToStart();
         }
 
+        //game loop
         while (!finished)
         {
+            turnCount++;
             // Advance each typist by one turn
             for  (int i = 1; i < numberOfSeats; i++){
                 // remove mistyped marker
@@ -113,10 +112,15 @@ public class TypingRace
             } catch (Exception e) {}
         }
 
-        // TODO (Task 2a): Print the winner's name here
+        // Print the winner's name + new accuracy
         if (winner != null) {
             System.out.println();
             System.out.println("And the winner is... " + winner.getName() + "!");
+
+            double oldAccuracy = winner.getAccuracy();
+            winner.setAccuracy(winner.getAccuracy() + 0.02);
+            double newAccuracy = winner.getAccuracy();
+            System.out.println("Final accuracy: " + newAccuracy +" (improved from "  + oldAccuracy +")");
         }
     }
 
@@ -126,7 +130,7 @@ public class TypingRace
      * If the typist is burnt out, they recover one turn's worth and skip typing.
      * Otherwise:
      *   - They may type a character (advancing progress) based on their accuracy.
-     *   - They may mistype (sliding back) — the chance of a mistype should decrease
+     *   - They may mistype (sliding back) — the chance of mistype should decrease
      *     for more accurate typists.
      *   - They may burn out — more likely for very high-accuracy typists
      *     who are pushing themselves too hard.
@@ -150,6 +154,7 @@ public class TypingRace
         }
         else if (Math.random() < theTypist.getAccuracy())
         {
+            //type character
             theTypist.typeCharacter();
         }
 
@@ -157,6 +162,7 @@ public class TypingRace
         // (probability scales with accuracy squared, capped at ~0.05)
         if (Math.random() < 0.05 * theTypist.getAccuracy() * theTypist.getAccuracy())
         {
+            theTypist.setAccuracy(theTypist.getAccuracy() - 0.02);
             theTypist.burnOut(BURNOUT_DURATION);
         }
     }
@@ -197,42 +203,33 @@ public class TypingRace
 
     /**
      * Prints a single typist's lane.
-     *
-     * Examples:
-     *   |          ⌨           | TURBOFINGERS (Accuracy: 0.85)
-     *   |    [zz]              | HUNT_N_PECK  (Accuracy: 0.40) BURNT OUT (2 turns)
-     *
-     * Note: Ty forgot to show when a typist has just mistyped. That would
-     * be a nice improvement — perhaps a [<] marker after their symbol.
-     *
      * @param theTypist the typist whose lane to print
      */
     private void printSeat(Typist theTypist)
     {
-//        int progress = Math.min(t.getProgress(), passageLength);
-//        int spacesBefore = progress;
-//        int spacesAfter = passageLength - progress;
-
         int spacesBefore = theTypist.getProgress();
         int spacesAfter  = passageLength - theTypist.getProgress();
 
         System.out.print('|');
         multiplePrint(' ', spacesBefore);
 
-        // Always show the typist's symbol so they can be identified on screen.
-        // Append ~ when burnt out so the state is visible without hiding identity.
+        // Always show the typist's symbol so they can be identified on screen
         System.out.print(theTypist.getSymbol());
+
+        // print player mistyped
         if (theTypist.hasJustMistyped()){
             System.out.print('<');
             spacesAfter--;
         }
 
+        //print player burnt out
         if (theTypist.isBurntOut())
         {
             System.out.print('~');
             spacesAfter--; // symbol + ~ together take two characters
         }
 
+        //print empty spaces
         multiplePrint(' ', spacesAfter);
         System.out.print('|');
         System.out.print(' ');
@@ -246,8 +243,9 @@ public class TypingRace
         }
         else
         {
-            System.out.print(theTypist.getName()
-                + " (Accuracy: " + theTypist.getAccuracy() + ")");
+            System.out.print(theTypist.getName() + " (Accuracy: "
+                    + String.format("%.2f",theTypist.getAccuracy())
+                    + ", WPM: " + String.format("%.2f", calculateWPM(theTypist)) + ")");
         }
     }
 
@@ -263,5 +261,29 @@ public class TypingRace
         {
             System.out.print(aChar);
         }
+    }
+
+    /**
+     * Calculates the current wpm for a typist and returns this
+     * @param t the typist on which wpm is calculated for
+     */
+    private double calculateWPM(Typist t)
+    {
+        if (turnCount == 0) return 0;
+
+        double minutes = (turnCount * 0.2) / 60.0; // each turn = 200ms
+        double words = t.getProgress() / 5.0; // standard: 5 chars = 1 word
+
+        return words / minutes;
+    }
+
+
+
+    public static void main(String[] args) {
+        TypingRace race = new TypingRace(40,3);
+        race.addTypist(new Typist('①', "TURBOFINGERS", 0.85), 1);
+        race.addTypist(new Typist('②', "QWERTY_QUEEN",  0.60), 2);
+        race.addTypist(new Typist('③', "HUNT_N_PECK",   0.30), 3);
+        race.startRace();
     }
 }
