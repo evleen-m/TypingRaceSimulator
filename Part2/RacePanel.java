@@ -6,12 +6,12 @@ import java.util.Objects;
  * Builds and manages the race display panel. * Uses composition instead of extending JPanel.
  */
 public class RacePanel {
-    private TypingRace race;
+    private Game race;
     private JPanel mainPanel;
     private JPanel drawingPanel;
 
-    public RacePanel(TypingRace race) {
-        this.race = race;
+    public RacePanel(Game game) {
+        race = game;
         buildPanel();
     }
 
@@ -59,7 +59,7 @@ public class RacePanel {
         g2.drawString("Turns: " + race.getTurnCount(), 25, 92);
         Typist[] seats = race.getSeats();
         int y = 140;
-        for (int i = 1; i < race.getNumberOfSeats(); i++) {
+        for (int i = 0; i < race.getNumberOfSeats(); i++) {
             drawLane(g2, seats[i], i, y);
             y += 145;
         }
@@ -78,6 +78,8 @@ public class RacePanel {
         int x = 25;
         int width = 900;
         int height = 85;
+        laneNumber++;
+
         g2.setColor(Color.WHITE);
         g2.fillRoundRect(x, y, width, height, 18, 18);
         g2.setColor(new Color(210, 210, 210));

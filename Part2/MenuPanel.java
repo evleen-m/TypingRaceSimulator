@@ -5,9 +5,9 @@ import java.awt.*;
  * Builds and manages the setup screen for the race.
  * Uses composition instead of extending JPanel.
  */
-public class SetupPanel
+public class MenuPanel
 {
-    private TypingRaceFrame parentFrame;
+    private FrameManager parentFrame;
 
     private JPanel mainPanel;
     private JComboBox<String> passageChoiceBox;
@@ -22,7 +22,7 @@ public class SetupPanel
     private static final String longPassage =
             "Graphical user interfaces allow programs to feel more interactive and polished. In this typing race, each typist advances through the actual passage text, making progress easier to follow and the simulation more engaging for the user.";
 
-    public SetupPanel(TypingRaceFrame parentFrame)
+    public MenuPanel(FrameManager parentFrame)
     {
         this.parentFrame = parentFrame;
         buildPanel();
@@ -107,6 +107,6 @@ public class SetupPanel
             }
         }
 
-        parentFrame.startConfiguredRace(passage);
+        parentFrame.startConfiguredRace(passage, 3);
     }
 }

@@ -5,10 +5,10 @@ import java.awt.*;
  * GUI controller for the typing race.
  * Uses composition instead of extending JFrame.
  */
-public class TypingRaceFrame
+public class FrameManager
 {
     private JFrame frame;
-    private TypingRace race;
+    private Game race;
     private RacePanel racePanel;
     private Timer timer;
     private JLabel statusLabel;
@@ -16,26 +16,31 @@ public class TypingRaceFrame
     private CardLayout cardLayout;
     private JPanel mainPanel;
 
-    public TypingRaceFrame(TypingRace race)
+    public FrameManager(Game game)
     {
-        this.race = race;
-
-        frame = new JFrame("Typing Race");
+        race = game;
+        //set up frame for all panels to be within
+        frame = new JFrame("Typing Race GAME");
         frame.setSize(1500, 900);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
+        // set up switching between panels -> create main panel
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        SetupPanel setupPanel = new SetupPanel(this);
+        // create menu panel and race panel
+        MenuPanel menuPanel = new MenuPanel(this);
         racePanel = new RacePanel(race);
 
-        mainPanel.add(setupPanel.getPanel(), "SETUP");
+        // set up the cardlayout switcher
+        mainPanel.add(menuPanel.getPanel(), "MENU");
         mainPanel.add(buildRaceScreen(), "RACE");
 
+        // add the panels to frame
         frame.add(mainPanel);
 
+        // game loop controls
         timer = new Timer(200, e -> {
             race.advanceOneTurn();
             racePanel.repaintRace();
@@ -51,7 +56,7 @@ public class TypingRaceFrame
             }
         });
 
-        cardLayout.show(mainPanel, "SETUP");
+        cardLayout.show(mainPanel, "MENU");
     }
 
     /**
@@ -74,7 +79,8 @@ public class TypingRaceFrame
      */
     private JPanel buildControls()
     {
-        JPanel outer = new JPanel(new BorderLayout());
+        // button container panels
+        JPanel buttonFooter = new JPanel(new BorderLayout());
         JPanel buttons = new JPanel(new FlowLayout());
 
         JButton startButton = new JButton("Start");
@@ -83,6 +89,7 @@ public class TypingRaceFrame
         JButton resetButton = new JButton("Reset");
         JButton setupButton = new JButton("Back to Setup");
 
+        // ation if start clicked
         startButton.addActionListener(e -> {
             if (!race.isFinished())
             {
@@ -91,11 +98,13 @@ public class TypingRaceFrame
             }
         });
 
+        // action is paused clicked
         pauseButton.addActionListener(e -> {
             timer.stop();
             statusLabel.setText("Paused.");
         });
 
+        // action if step is clicked
         stepButton.addActionListener(e -> {
             if (!race.isFinished())
             {
@@ -113,6 +122,7 @@ public class TypingRaceFrame
             }
         });
 
+        // action if reset is clicked
         resetButton.addActionListener(e -> {
             timer.stop();
             race.resetRace();
@@ -120,11 +130,13 @@ public class TypingRaceFrame
             statusLabel.setText("Race reset.");
         });
 
+        // action if setup is clicked
         setupButton.addActionListener(e -> {
             timer.stop();
             cardLayout.show(mainPanel, "SETUP");
         });
 
+        // add buttons to the button specific panel
         buttons.add(startButton);
         buttons.add(pauseButton);
         buttons.add(stepButton);
@@ -133,10 +145,10 @@ public class TypingRaceFrame
 
         statusLabel = new JLabel("Ready.");
 
-        outer.add(buttons, BorderLayout.NORTH);
-        outer.add(statusLabel, BorderLayout.SOUTH);
+        buttonFooter.add(buttons, BorderLayout.NORTH);
+        buttonFooter.add(statusLabel, BorderLayout.SOUTH);
 
-        return outer;
+        return buttonFooter;
     }
 
     /**
@@ -144,10 +156,11 @@ public class TypingRaceFrame
      *
      * @param passageText the selected passage text
      */
-    public void startConfiguredRace(String passageText)
+    public void startConfiguredRace(String passageText, int playerNumber)
     {
-        race.setPassageText(passageText);
-        race.resetRace();
+        race.StartRace(passageText, playerNumber);
+        //race.setPassageText(passageText);
+        //race.resetRace();
         racePanel.repaintRace();
         statusLabel.setText("Ready.");
         cardLayout.show(mainPanel, "RACE");
