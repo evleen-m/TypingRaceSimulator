@@ -33,13 +33,7 @@ public class Typist
         this.burntOutTurnsRemaining = 0;
         this.accuracyRating = typistAccuracy;
         this.justMistyped = false;
-
-        // assigns typist a random colour for use when drawing
-        this.color = new Color(
-                (int)(Math.random() * 256),
-                (int)(Math.random() * 256),
-                (int)(Math.random() * 256)
-        );
+        setRandColor();
     }
 
     public void setJustMistyped(boolean justMistyped)
@@ -167,19 +161,21 @@ public class Typist
         }
     }
 
-    /**
-     * Sets the symbol used to represent this typist.
-     *
-     * @param newSymbol the new symbol character
-     */
-    public void setSymbol(char newSymbol)
+    private void setRandColor()
     {
-        typistSymbol = newSymbol;
+        int r = (int)(Math.random() * 256);
+        int g = (int)(Math.random() * 156);
+        int b = (int)(Math.random() * 256);
+        color = new Color(r, g, b);
+    }
+
+    public void setColor(Color color)
+    {
+        this.color = color;
     }
 
     public Color getColor()
     {
-        return this.color;
+        return color;
     }
-
 }

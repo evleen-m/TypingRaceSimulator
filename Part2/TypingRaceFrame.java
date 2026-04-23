@@ -1,65 +1,44 @@
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.Timer;
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import javax.swing.*;
+import java.awt.*;
 
 /**
- * The main GUI window for the Typing Race application.
- *
- * This class is responsible for:
- * - Creating and displaying the main window
- * - Handling user controls (Start, Pause, Step, Reset)
- * - Updating the race using a Swing Timer
- * - Displaying race status messages
- *
- * It interacts with the TypingRace class (model) and RacePanel (view).
- *
- * @author Evleen Manghera
- * @version 1
+ * GUI controller for the typing race.
+ * Uses composition instead of extending JFrame.
  */
-public class TypingRaceFrame extends JFrame
+public class TypingRaceFrame
 {
+    private JFrame frame;
     private TypingRace race;
-    private RacePanel racePanel;  // panel used to draw the race
-    private Timer timer;          // refreshes animation (runs every 200ms)
-    private JLabel statusLabel;   // displays current race status
+    private RacePanel racePanel;
+    private Timer timer;
+    private JLabel statusLabel;
 
-    /**
-     * Constructs the GUI window and sets up all components.
-     *
-     * @param race the TypingRace instance to visualise
-     */
+    private CardLayout cardLayout;
+    private JPanel mainPanel;
+
     public TypingRaceFrame(TypingRace race)
     {
         this.race = race;
-        this.racePanel = new RacePanel(race);
 
-        // initialise window properties
-        setTitle("Typing Race");
-        setSize(820, 650);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // centre window
-        setLayout(new BorderLayout());
+        frame = new JFrame("Typing Race");
+        frame.setSize(1500, 900);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
 
-        // add race visual panel (centre)
-        add(racePanel, BorderLayout.CENTER);
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
 
-        // add control buttons and status label (bottom)
-        add(buildControls(), BorderLayout.SOUTH);
+        SetupPanel setupPanel = new SetupPanel(this);
+        racePanel = new RacePanel(race);
 
-        /**
-         * Timer runs every 200ms to simulate the race.
-         * Each tick:
-         * - advances the race by one turn
-         * - repaints the panel
-         * - checks if the race has finished
-         */
+        mainPanel.add(setupPanel.getPanel(), "SETUP");
+        mainPanel.add(buildRaceScreen(), "RACE");
+
+        frame.add(mainPanel);
+
         timer = new Timer(200, e -> {
             race.advanceOneTurn();
-            racePanel.repaint();
+            racePanel.repaintRace();
 
             if (race.isFinished())
             {
@@ -71,27 +50,39 @@ public class TypingRaceFrame extends JFrame
                 statusLabel.setText("Race in progress...");
             }
         });
+
+        cardLayout.show(mainPanel, "SETUP");
     }
 
     /**
-     * Builds the control panel containing buttons and status label.
+     * Builds the race screen panel.
      *
-     * @return a JPanel containing all controls
+     * @return the race screen panel
+     */
+    private JPanel buildRaceScreen()
+    {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(racePanel.getPanel(), BorderLayout.CENTER);
+        panel.add(buildControls(), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    /**
+     * Builds the control panel.
+     *
+     * @return the control panel
      */
     private JPanel buildControls()
     {
         JPanel outer = new JPanel(new BorderLayout());
         JPanel buttons = new JPanel(new FlowLayout());
 
-        // create buttons
         JButton startButton = new JButton("Start");
         JButton pauseButton = new JButton("Pause");
         JButton stepButton = new JButton("Step");
         JButton resetButton = new JButton("Reset");
+        JButton setupButton = new JButton("Back to Setup");
 
-        /**
-         * Starts the race animation.
-         */
         startButton.addActionListener(e -> {
             if (!race.isFinished())
             {
@@ -100,22 +91,16 @@ public class TypingRaceFrame extends JFrame
             }
         });
 
-        /**
-         * Pauses the race animation.
-         */
         pauseButton.addActionListener(e -> {
             timer.stop();
             statusLabel.setText("Paused.");
         });
 
-        /**
-         * Advances the race by one turn manually.
-         */
         stepButton.addActionListener(e -> {
             if (!race.isFinished())
             {
                 race.advanceOneTurn();
-                racePanel.repaint();
+                racePanel.repaintRace();
 
                 if (race.isFinished())
                 {
@@ -128,28 +113,51 @@ public class TypingRaceFrame extends JFrame
             }
         });
 
-        /**
-         * Resets the race to the starting state.
-         */
         resetButton.addActionListener(e -> {
             timer.stop();
             race.resetRace();
-            racePanel.repaint();
+            racePanel.repaintRace();
             statusLabel.setText("Race reset.");
         });
 
-        // add buttons to panel
+        setupButton.addActionListener(e -> {
+            timer.stop();
+            cardLayout.show(mainPanel, "SETUP");
+        });
+
         buttons.add(startButton);
         buttons.add(pauseButton);
         buttons.add(stepButton);
         buttons.add(resetButton);
+        buttons.add(setupButton);
 
-        // label at bottom
         statusLabel = new JLabel("Ready.");
 
         outer.add(buttons, BorderLayout.NORTH);
         outer.add(statusLabel, BorderLayout.SOUTH);
 
         return outer;
+    }
+
+    /**
+     * Starts the race with the configured passage.
+     *
+     * @param passageText the selected passage text
+     */
+    public void startConfiguredRace(String passageText)
+    {
+        race.setPassageText(passageText);
+        race.resetRace();
+        racePanel.repaintRace();
+        statusLabel.setText("Ready.");
+        cardLayout.show(mainPanel, "RACE");
+    }
+
+    /**
+     * Shows the GUI window.
+     */
+    public void show()
+    {
+        frame.setVisible(true);
     }
 }

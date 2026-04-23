@@ -1,7 +1,9 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.lang.Math;
 import javax.swing.SwingUtilities;
+import java.util.Random;
 
 /**
  * A typing race simulation. Three typists race to complete a passage of text,
@@ -12,42 +14,50 @@ import javax.swing.SwingUtilities;
  */
 public class TypingRace
 {
-    private int passageLength;   // total characters in the passage to type
-    private Typist[] seats;
-    private int numberOfSeats;
+    private int passageLength;
+    private String passageText;
+    private final Typist[] seats;
+    private final int numberOfSeats;
 
-    // accuracy thresholds for mistype and burnout events
     private static final double MISTYPE_BASE_CHANCE = 0.3;
-    private static final int SLIDE_BACK_AMOUNT = 1;
+    private static final int SLIDE_BACK_AMOUNT = 3;
     private static final int BURNOUT_DURATION = 3;
 
     private int turnCount = 0;
     private boolean finished = false;
     private Typist winner = null;
 
+    private static final ArrayList<String> names = new ArrayList<>(Arrays.asList(
+            "TURBOFINGERS",
+            "QWERTY_QUEEN",
+            "HUNT_N_PECK",
+            "KEYSMASHER",
+            "SPEED_TYPER",
+            "CTRL_MASTER",
+            "SHIFT_WARRIOR",
+            "BYTE_BLAZER",
+            "CODE_TYPHOON",
+            "RAPID_KEYS"
+    ));
+
+
+
     /**
      * Constructor for objects of class TypingRace.
-     * Sets up the race with a passage of the given length.
-     * Initially, there are no typists seated.
+     * Sets up the race with a passage of the given text.
      *
-     * @param passageLength the number of characters in the passage to type
+     * @param passageText the passage text to type
      * @param seatsLength the number of seats in the race
      */
-    public TypingRace(int passageLength, int seatsLength)
+    public TypingRace(String passageText, int seatsLength)
     {
-        if (passageLength > 0)
-        {
-            this.passageLength = passageLength;
-        }
-        else
-        {
-            this.passageLength = 40;
-        }
+        setPassageText(passageText);
 
-        // index 0 is not used
         seats = new Typist[seatsLength + 1];
         Arrays.fill(seats, null);
         this.numberOfSeats = seatsLength + 1;
+
+        createTypists(this, numberOfSeats);
     }
 
     /**
@@ -74,7 +84,7 @@ public class TypingRace
     }
 
     /**
-     * Starts the terminal version of the race.
+     * Starts the typing race in terminal mode.
      */
     public void startRace()
     {
@@ -109,12 +119,12 @@ public class TypingRace
 
         SwingUtilities.invokeLater(() -> {
             TypingRaceFrame frame = new TypingRaceFrame(this);
-            frame.setVisible(true);
+            frame.show();
         });
     }
 
     /**
-     * Resets the race state for a new race.
+     * Resets the race state so that a new race can begin.
      */
     public void resetRace()
     {
@@ -318,9 +328,33 @@ public class TypingRace
         return words / minutes;
     }
 
+    /**
+     * Sets the passage text used in the race.
+     *
+     * @param passageText the new passage text
+     */
+    public void setPassageText(String passageText)
+    {
+        if (passageText == null || passageText.trim().isEmpty())
+        {
+            this.passageText = "The quick brown fox jumps over the lazy dog.";
+        }
+        else
+        {
+            this.passageText = passageText.trim();
+        }
+
+        this.passageLength = this.passageText.length();
+    }
+
     public int getPassageLength()
     {
         return passageLength;
+    }
+
+    public String getPassageText()
+    {
+        return passageText;
     }
 
     public Typist[] getSeats()
@@ -348,14 +382,47 @@ public class TypingRace
         return winner;
     }
 
+    private void createTypists(TypingRace race,int numberOfSeats){
+        for (int i = 1; i < numberOfSeats; i++) {
+            char symbol = (char) (0x24B5 + i);
+            String name = pickTypistName();
+            double accuracy = randTypistAccuracy();
+            race.addTypist(new Typist(symbol,name,accuracy), i);
+        }
+    }
+
+    private String pickTypistName(){
+        Random rand = new Random();
+        if (names.isEmpty())
+        {
+            return "NO_NAMES_LEFT";
+        }
+        int index = rand.nextInt(names.size());
+        return names.remove(index); // removes so it can't repeat
+    }
+
+    private double randTypistAccuracy(){
+        double num = Math.random();
+        // create variation -> ensures some weaker and stronger but most are mid capability
+        if (num < 0.2)
+        {
+            num = 0.50 + Math.random() * 0.08; // weaker
+        }
+        else if (num < 0.8)
+        {
+            num = 0.58 + Math.random() * 0.17; // average
+        }
+        else
+        {
+            num = 0.75 + Math.random() * 0.10; // stronger
+        }
+        return num;
+    }
+
+
     public static void main(String[] args)
     {
-        TypingRace race = new TypingRace(40, 3);
-        race.addTypist(new Typist('①', "TURBOFINGERS", 0.85), 1);
-        race.addTypist(new Typist('②', "QWERTY_QUEEN", 0.60), 2);
-        race.addTypist(new Typist('③', "HUNT_N_PECK", 0.30), 3);
-        
-
+        TypingRace race = new TypingRace("HI", 5);
         race.startRaceGUI();
     }
 }
