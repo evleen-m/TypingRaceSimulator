@@ -10,7 +10,7 @@ public class Main
 {
     public static void main(String[] args)
     {
-        Game race = new Game(4, "HI");
+        Game race = new Game(2, "HI");
         startRaceGUI(race);
     }
 

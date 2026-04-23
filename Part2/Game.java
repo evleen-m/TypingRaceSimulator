@@ -26,10 +26,10 @@ public class Game {
 
 
     private final ArrayList<String> names = new ArrayList<>(Arrays.asList(
-            "TURBOFINGERS",
+            "TURBO-FINGERS",
             "QWERTY_QUEEN",
             "HUNT_N_PECK",
-            "KEYSMASHER",
+            "KEY-SMASHER",
             "SPEED_TYPER",
             "CTRL_MASTER",
             "SHIFT_WARRIOR",
@@ -51,9 +51,10 @@ public class Game {
     }
 
     public void StartRace(String passageText, int playerNumber) {
+        resetRace();
         numberOfSeats = playerNumber;
         setPassageText(passageText);
-        resetRace();
+
 
         seats = new Typist[numberOfSeats + 1];
         Arrays.fill(seats, null);
@@ -313,7 +314,7 @@ public class Game {
 
     private double randTypistAccuracy() {
         double num = Math.random();
-        // create variation -> ensures some weaker and stronger but most are mid capability
+        // create variation -> ensures some weaker and stronger but most are mid-capability
         if (num < 0.2) {
             num = 0.50 + Math.random() * 0.08; // weaker
         } else if (num < 0.8) {

@@ -22,6 +22,8 @@ public class MenuPanel
     private static final String longPassage =
             "Graphical user interfaces allow programs to feel more interactive and polished. In this typing race, each typist advances through the actual passage text, making progress easier to follow and the simulation more engaging for the user.";
 
+    private JComboBox<Integer> playerNumBox;
+
     public MenuPanel(FrameManager parentFrame)
     {
         this.parentFrame = parentFrame;
@@ -61,6 +63,9 @@ public class MenuPanel
 
         customPanel.add(new JScrollPane(customPassageArea), BorderLayout.CENTER);
         centre.add(customPanel);
+
+        playerNumBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
+        presetPanel.add(playerNumBox);
 
         JButton startButton = new JButton("Create Race");
         startButton.addActionListener(e -> createRace());
@@ -107,6 +112,12 @@ public class MenuPanel
             }
         }
 
-        parentFrame.startConfiguredRace(passage, 3);
+        Integer playerNumber = (Integer) playerNumBox.getSelectedItem();
+
+        if (playerNumber == null){
+            throw new RuntimeException("Invalid player number");
+        }
+
+        parentFrame.startConfiguredRace(passage, playerNumber);
     }
 }

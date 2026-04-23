@@ -133,7 +133,7 @@ public class FrameManager
         // action if setup is clicked
         setupButton.addActionListener(e -> {
             timer.stop();
-            cardLayout.show(mainPanel, "SETUP");
+            cardLayout.show(mainPanel, "MENU");
         });
 
         // add buttons to the button specific panel
