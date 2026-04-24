@@ -20,6 +20,7 @@ public class Typist
     private double accuracyRating;
     private boolean justMistyped;
     private Color color;
+    private boolean finished = false;
 
     private TypistConfig config;
 
@@ -69,6 +70,13 @@ public class Typist
 
     public double getINITAL_ACCURACY() {
         return INITAL_ACCURACY;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+    public void setFinished(boolean finished) {
+        this.finished = finished;
     }
 
     public void setJustMistyped(boolean justMistyped)
@@ -227,4 +235,5 @@ public class Typist
     public void setConfig(TypistConfig config) {
         this.config = config;
     }
+
 }

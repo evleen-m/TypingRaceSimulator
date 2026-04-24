@@ -125,6 +125,7 @@ public class Game {
     /**
      * Advances the whole race by one turn.
      */
+    // advances the race by one turn for all typists
     public void advanceOneTurn() {
         if (finished) {
             return;
@@ -132,21 +133,38 @@ public class Game {
 
         turnCount++;
 
+        // only move typists who have not finished yet
         for (int i = 0; i < numberOfSeats; i++) {
-            if (seats[i] != null) {
+            if (seats[i] != null && !seats[i].isFinished()) {
                 seats[i].setJustMistyped(false);
                 advanceTypist(seats[i]);
             }
         }
 
+        // check which typists finished this turn
         for (int i = 0; i < numberOfSeats; i++) {
-            if (seats[i] != null && raceFinishedBy(seats[i])) {
-                winner = seats[i];
-                finished = true;
-                winner.setAccuracy(winner.getAccuracy() + 0.02);
-                break;
+            if (seats[i] != null && !seats[i].isFinished() && raceFinishedBy(seats[i])) {
+
+                if (winner == null) {
+                    winner = seats[i];
+                    winner.setAccuracy(winner.getAccuracy() + 0.02);
+                }
+
+                seats[i].setFinished(true);
             }
         }
+
+        // end the whole race only when everyone is finished
+        finished = checkAllFinished();
+    }
+    private boolean checkAllFinished() {
+        for (int i = 0; i < numberOfSeats; i++) {
+            if (seats[i] != null && !seats[i].isFinished()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
