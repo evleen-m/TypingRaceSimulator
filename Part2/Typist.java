@@ -17,6 +17,9 @@ public class Typist
     private boolean justMistyped;
     private Color color;
 
+    private TypistConfig config;
+
+
     /**
      * Creates a new typist with a given symbol, name, and accuracy rating.
      *
@@ -177,5 +180,17 @@ public class Typist
     public Color getColor()
     {
         return color;
+    }
+
+
+
+
+
+    public TypistConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(TypistConfig config) {
+        this.config = config;
     }
 }

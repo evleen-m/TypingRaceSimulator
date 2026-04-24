@@ -160,6 +160,7 @@ public class RacePanel
 
         JLabel nameLabel = new JLabel(
                 typist.getName()
+                        + " | TYPE: " + typist.getConfig().getTypingStyle()
                         + " | Accuracy: " + String.format("%.2f", typist.getAccuracy())
                         + " | WPM: " + String.format("%.2f", race.calculateWPM(typist))
         );

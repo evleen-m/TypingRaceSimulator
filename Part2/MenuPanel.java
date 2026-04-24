@@ -136,9 +136,12 @@ public class MenuPanel
         config.autocorrectOn = autocorrectOnBoxSelected;
         config.coffeeModeOn = coffeeModeOnBoxSelected;
         config.nightShiftOn = nightShiftOnBoxSelected;
+        config.playerNumber = playerNumber;
+        config.passageText = passage;
 
 
-        parentFrame.startConfiguredRace(passage, playerNumber, config);
+        //parentFrame.startConfiguredRace(passage, playerNumber, config);
+        parentFrame.openTypistConfig(config);
     }
 
 
@@ -165,4 +168,6 @@ public class MenuPanel
         }
         return passage;
     }
+
+
 }

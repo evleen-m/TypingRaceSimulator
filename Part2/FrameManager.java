@@ -17,6 +17,8 @@ public class FrameManager
     private JPanel mainPanel;
     private boolean stopNextTick = false;
 
+    private TypistConfigPanel typistConfigPanel;
+
     public FrameManager(Game game)
     {
         race = game;
@@ -34,8 +36,9 @@ public class FrameManager
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        // create menu panel and race panel
+        // create menu panel, typist config panel and race panel
         MenuPanel menuPanel = new MenuPanel(this);
+        typistConfigPanel = new TypistConfigPanel(this);
         racePanel = new RacePanel(race);
 
         // set up the cardlayout switcher
@@ -50,6 +53,7 @@ public class FrameManager
             race.advanceOneTurn();
             racePanel.repaintRace();
 
+            // stops on the next fframe so can see who won
             if (stopNextTick)
             {
                 timer.stop();
@@ -196,31 +200,58 @@ public class FrameManager
         return buttonFooter;
     }
 
-    /**
-     * Starts the race with the configured passage.
-     *
-     * @param passageText the selected passage text
-     */
-    public void startConfiguredRace(String passageText, int playerNumber, GameConfig config)
-    {
-        race.StartRace(passageText, playerNumber, config);
-        racePanel.repaintRace();
-        statusLabel.setText("Ready.");
-        cardLayout.show(mainPanel, "RACE");
-    }
-
-//    public void startConfiguredRace(GameConfig config)
+//    /**
+//     * Starts the race with the configured passage.
+//     *
+//     * @param passageText the selected passage text
+//     */
+//    public void startConfiguredRace(String passageText, int playerNumber, GameConfig config)
 //    {
-//        race.StartRace(config.passageText, config.playerNumber,config);
+//        race.StartRace(passageText, playerNumber, config);
 //        racePanel.repaintRace();
 //        statusLabel.setText("Ready.");
 //        cardLayout.show(mainPanel, "RACE");
 //    }
+
     /**
      * Shows the GUI window.
      */
     public void show()
     {
         frame.setVisible(true);
+    }
+
+    /**
+     * Opens the typist configuration screen.
+     *
+     * @param config the selected game config
+     */
+    public void openTypistConfig(GameConfig config)
+    {
+        typistConfigPanel.buildPanel(config);
+
+        mainPanel.add(typistConfigPanel.getPanel(), "TYPECONFIG");
+        cardLayout.show(mainPanel, "TYPECONFIG");
+    }
+
+    /**
+     * Shows the menu screen.
+     */
+    public void showMenu()
+    {
+        cardLayout.show(mainPanel, "MENU");
+    }
+
+    /**
+     * Starts the race with the configured passage and typists.
+     *
+     * @param config the selected game config
+     */
+    public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs)
+    {
+        race.StartRace(config, typistConfigs);
+        racePanel.repaintRace();
+        statusLabel.setText("Ready.");
+        cardLayout.show(mainPanel, "RACE");
     }
 }
