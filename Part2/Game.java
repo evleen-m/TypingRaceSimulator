@@ -53,7 +53,7 @@ public class Game {
 
     public void StartRace(GameConfig config, TypistConfig[] typistConfigs)
     {
-        resetRace();
+        resetRace(typistConfigs);
 
         numberOfSeats = config.playerNumber;
         setPassageText(config.passageText);
@@ -78,7 +78,7 @@ public class Game {
     {
         for (int i = 0; i < numberOfSeats; i++)
         {
-            char symbol = (char) (0x24B6 + i);
+            //char symbol = (char) (0x24B6 + i);
             String name = pickTypistName();
             double accuracy = randTypistAccuracy();
 
@@ -87,16 +87,13 @@ public class Game {
                 accuracy = accuracy - 0.07;
             }
 
+            String chosenSymbol = typistConfigs[i].getSymbol();
+            char symbol = chosenSymbol.charAt(0);
+
             Typist typist = new Typist(symbol, name, accuracy);
 
-            if (typistConfigs != null && i < typistConfigs.length)
-            {
-                typist.setConfig(typistConfigs[i]);
-            }
-            else
-            {
-                typist.setConfig(new TypistConfig());
-            }
+            typist.setConfig(typistConfigs[i]);
+            typist.setColor(typistConfigs[i].getColour());
 
             addTypist(typist, i);
         }
@@ -120,7 +117,7 @@ public class Game {
     /**
      * Resets the race state so that a new race can begin.
      */
-    public void resetRace() {
+    public void resetRace(TypistConfig[] typistConfigs) {
         turnCount = 0;
         finished = false;
         winner = null;
@@ -131,12 +128,14 @@ public class Game {
         for (int i = 0; i < numberOfSeats; i++) {
             if (seats[i] != null) {
                 seats[i].resetToStart();
-                seats[i].setRandColor();
+
+                if (typistConfigs != null && i < typistConfigs.length) {
+                    seats[i].setColor(typistConfigs[i].getColour());
+                }
             }
         }
 
     }
-
     /**
      * Advances the whole race by one turn.
      */

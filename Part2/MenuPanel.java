@@ -40,69 +40,214 @@ public class MenuPanel
     private void buildPanel()
     {
         mainPanel = new JPanel(new BorderLayout(15, 15));
+        mainPanel.setBackground(new Color(245, 247, 250));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JLabel title = new JLabel("Set up the race");
-        title.setFont(title.getFont().deriveFont(24f));
+        title.setFont(title.getFont().deriveFont(Font.BOLD, 28f));
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel centre = new JPanel(new GridLayout(5, 1, 10, 10));
+        JPanel centre = new JPanel();
+        centre.setLayout(new BoxLayout(centre, BoxLayout.Y_AXIS));
+        centre.setBackground(new Color(245, 247, 250));
 
-        // passage choice box + custom length
-        JPanel presetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        presetPanel.add(new JLabel("Choose passage:"));
+        centre.add(buildPassageCard());
+        centre.add(Box.createVerticalStrut(12));
+        centre.add(buildPlayerCard());
+        centre.add(Box.createVerticalStrut(12));
+        centre.add(buildModifierCard());
+
+        mainPanel.add(centre, BorderLayout.CENTER);
+
+        JButton startButton = new JButton("Continue to Typist Setup");
+        startButton.setFont(startButton.getFont().deriveFont(Font.BOLD, 14f));
+        startButton.addActionListener(e -> createRace());
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.setBackground(new Color(245, 247, 250));
+        buttonPanel.add(startButton);
+
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private JPanel buildPassageCard()
+    {
+        JPanel card = createCard();
+
+        GridBagConstraints c = createConstraints();
+
+        JLabel heading = createHeading("Passage Settings");
+
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        card.add(heading, c);
+
+        c.gridwidth = 1;
+
+        c.gridx = 0;
+        c.gridy = 1;
+        card.add(new JLabel("Choose passage:"), c);
 
         passageChoiceBox = new JComboBox<>(new String[] {
                 "Short", "Medium", "Long", "Custom"
         });
 
-        presetPanel.add(passageChoiceBox);
-        centre.add(presetPanel);
+        c.gridx = 1;
+        card.add(passageChoiceBox, c);
 
-        JPanel customPanel = new JPanel(new BorderLayout());
-        customPanel.add(new JLabel("Custom passage:"), BorderLayout.NORTH);
+        c.gridx = 0;
+        c.gridy = 2;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        card.add(new JLabel("Custom passage:"), c);
 
-        customPassageArea = new JTextArea(5, 40);
+        customPassageArea = new JTextArea(5, 45);
         customPassageArea.setLineWrap(true);
         customPassageArea.setWrapStyleWord(true);
 
-        customPanel.add(new JScrollPane(customPassageArea), BorderLayout.CENTER);
-        centre.add(customPanel);
+        JScrollPane customScroll = new JScrollPane(customPassageArea);
 
-        // shoice number of players box
-        JPanel playerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        playerPanel.add(new JLabel("Number of players:"));
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        card.add(customScroll, c);
+
+        JLabel hint = new JLabel("Only used when Custom is selected.");
+        hint.setFont(hint.getFont().deriveFont(12f));
+        hint.setForeground(new Color(90, 90, 90));
+
+        c.gridx = 1;
+        c.gridy = 3;
+        c.fill = GridBagConstraints.NONE;
+        card.add(hint, c);
+
+        return card;
+    }
+
+    private JPanel buildPlayerCard()
+    {
+        JPanel card = createCard();
+
+        GridBagConstraints c = createConstraints();
+
+        JLabel heading = createHeading("Race Settings");
+
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        card.add(heading, c);
+
+        c.gridwidth = 1;
+
+        c.gridx = 0;
+        c.gridy = 1;
+        card.add(new JLabel("Number of players:"), c);
 
         playerNumBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
-        playerPanel.add(playerNumBox);
 
-        centre.add(playerPanel);
+        c.gridx = 1;
+        card.add(playerNumBox, c);
 
-        // add difficulty modifiers
-        JPanel modifierPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        modifierPanel.add(new JLabel("Autocorrect On:"));
-        autocorrectOnBox = new JCheckBox();
-        modifierPanel.add(autocorrectOnBox);
+        JLabel hint = new JLabel("Each player will be configured on the next screen.");
+        hint.setFont(hint.getFont().deriveFont(12f));
+        hint.setForeground(new Color(90, 90, 90));
 
-        modifierPanel.add(new JLabel("Coffee Mode:"));
-        coffeeModeOnBox = new JCheckBox();
-        modifierPanel.add(coffeeModeOnBox);
+        c.gridx = 1;
+        c.gridy = 2;
+        card.add(hint, c);
 
-        modifierPanel.add(new JLabel("Night Mode:"));
-        nightShiftOnBox = new JCheckBox();
-        modifierPanel.add(nightShiftOnBox);
+        return card;
+    }
 
-        centre.add(modifierPanel);
+    private JPanel buildModifierCard()
+    {
+        JPanel card = createCard();
 
-        // create race button
-        JButton startButton = new JButton("Create Race");
-        startButton.addActionListener(e -> createRace());
+        GridBagConstraints c = createConstraints();
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonPanel.add(startButton);
-        centre.add(buttonPanel);
+        JLabel heading = createHeading("Global Difficulty Modifiers");
 
-        mainPanel.add(centre, BorderLayout.CENTER);
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 3;
+        card.add(heading, c);
+
+        c.gridwidth = 1;
+
+        autocorrectOnBox = new JCheckBox("Autocorrect");
+        coffeeModeOnBox = new JCheckBox("Caffeine Mode");
+        nightShiftOnBox = new JCheckBox("Night Shift");
+
+        styleCheckbox(autocorrectOnBox);
+        styleCheckbox(coffeeModeOnBox);
+        styleCheckbox(nightShiftOnBox);
+
+        c.gridx = 0;
+        c.gridy = 1;
+        card.add(autocorrectOnBox, c);
+
+        c.gridx = 1;
+        card.add(coffeeModeOnBox, c);
+
+        c.gridx = 2;
+        card.add(nightShiftOnBox, c);
+
+        JLabel autocorrectText = createSmallText("Halves slide-back after mistypes.");
+        JLabel caffeineText = createSmallText("Early speed boost, later burnout risk.");
+        JLabel nightText = createSmallText("Slightly lowers everyone’s accuracy.");
+
+        c.gridy = 2;
+
+        c.gridx = 0;
+        card.add(autocorrectText, c);
+
+        c.gridx = 1;
+        card.add(caffeineText, c);
+
+        c.gridx = 2;
+        card.add(nightText, c);
+
+        return card;
+    }
+
+    private JPanel createCard()
+    {
+        JPanel card = new JPanel(new GridBagLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210, 210, 210)),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return card;
+    }
+
+    private GridBagConstraints createConstraints()
+    {
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(6, 8, 6, 8);
+        c.anchor = GridBagConstraints.WEST;
+        return c;
+    }
+
+    private JLabel createHeading(String text)
+    {
+        JLabel label = new JLabel(text);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 18f));
+        return label;
+    }
+
+    private JLabel createSmallText(String text)
+    {
+        JLabel label = new JLabel(text);
+        label.setFont(label.getFont().deriveFont(12f));
+        label.setForeground(new Color(90, 90, 90));
+        return label;
+    }
+
+    private void styleCheckbox(JCheckBox checkBox)
+    {
+        checkBox.setBackground(Color.WHITE);
+        checkBox.setFocusPainted(false);
     }
 
     /**
@@ -123,14 +268,15 @@ public class MenuPanel
         String passage = getPassageString();
 
         Integer playerNumber = (Integer) playerNumBox.getSelectedItem();
-        if (playerNumber == null){
+
+        if (playerNumber == null)
+        {
             throw new RuntimeException("Invalid player number");
         }
 
         boolean autocorrectOnBoxSelected = autocorrectOnBox.isSelected();
         boolean coffeeModeOnBoxSelected = coffeeModeOnBox.isSelected();
         boolean nightShiftOnBoxSelected = nightShiftOnBox.isSelected();
-
 
         GameConfig config = new GameConfig();
         config.autocorrectOn = autocorrectOnBoxSelected;
@@ -139,13 +285,11 @@ public class MenuPanel
         config.playerNumber = playerNumber;
         config.passageText = passage;
 
-
-        //parentFrame.startConfiguredRace(passage, playerNumber, config);
         parentFrame.openTypistConfig(config);
     }
 
-
-    private String getPassageString() {
+    private String getPassageString()
+    {
         String selected = (String) passageChoiceBox.getSelectedItem();
         String passage = shortPassage;
 
@@ -161,13 +305,13 @@ public class MenuPanel
         else if ("Custom".equals(selected))
         {
             String custom = customPassageArea.getText().trim();
+
             if (!custom.isEmpty())
             {
                 passage = custom;
             }
         }
+
         return passage;
     }
-
-
 }

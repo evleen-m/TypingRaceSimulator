@@ -18,6 +18,7 @@ public class FrameManager
     private boolean stopNextTick = false;
 
     private TypistConfigPanel typistConfigPanel;
+    private TypistConfig[] typistConfigs;
 
     public FrameManager(Game game)
     {
@@ -174,7 +175,7 @@ public class FrameManager
         // action if reset is clicked
         resetButton.addActionListener(e -> {
             timer.stop();
-            race.resetRace();
+            race.resetRace(typistConfigs);
             racePanel.repaintRace();
             statusLabel.setText("Race reset.");
         });
@@ -249,6 +250,7 @@ public class FrameManager
      */
     public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs)
     {
+        this.typistConfigs = typistConfigs;
         race.StartRace(config, typistConfigs);
         racePanel.repaintRace();
         statusLabel.setText("Ready.");

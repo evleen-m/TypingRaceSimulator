@@ -13,6 +13,7 @@ public class Typist
     private int progress;
     private Boolean burntOut;
     private int burntOutTurnsRemaining;
+    private final double INITAL_ACCURACY;
     private double accuracyRating;
     private boolean justMistyped;
     private Color color;
@@ -35,8 +36,12 @@ public class Typist
         this.burntOut = false;
         this.burntOutTurnsRemaining = 0;
         this.accuracyRating = typistAccuracy;
+        INITAL_ACCURACY = typistAccuracy;
         this.justMistyped = false;
-        setRandColor();
+    }
+
+    public double getINITAL_ACCURACY() {
+        return INITAL_ACCURACY;
     }
 
     public void setJustMistyped(boolean justMistyped)
@@ -164,13 +169,6 @@ public class Typist
         }
     }
 
-    public void setRandColor()
-    {
-        int r = (int)(Math.random() * 256);
-        int g = (int)(Math.random() * 156);
-        int b = (int)(Math.random() * 256);
-        color = new Color(r, g, b);
-    }
 
     public void setColor(Color color)
     {

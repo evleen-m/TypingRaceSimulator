@@ -106,7 +106,8 @@ public class RacePanel
             winner.setBorder(BorderFactory.createEmptyBorder(20, 25, 5, 25));
             lanesPanel.add(winner);
 
-            JLabel accuracy = new JLabel("Final accuracy: " + String.format("%.2f", race.getWinner().getAccuracy()));
+            JLabel accuracy = new JLabel("Final accuracy: " + String.format("%.2f", race.getWinner().getAccuracy())
+                                                + " improved from: " + String.format("%.2f", race.getWinner().getINITAL_ACCURACY()));
             accuracy.setForeground(new Color(0, 130, 60));
             accuracy.setFont(new Font("SansSerif", Font.BOLD, 22));
             accuracy.setBorder(BorderFactory.createEmptyBorder(0, 25, 20, 25));
@@ -136,10 +137,16 @@ public class RacePanel
         topPanel.setBackground(Color.WHITE);
         topPanel.setPreferredSize(new Dimension(1000, 65));
 
-        JLabel laneLabel = new JLabel("Lane " + laneNumber);
+        JLabel laneLabel = new JLabel("Lane " + laneNumber );
         laneLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
         laneLabel.setBounds(10, 5, 100, 20);
         topPanel.add(laneLabel);
+
+        JLabel nameLabel = new JLabel(typist.getName());
+        nameLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
+        nameLabel.setForeground(typist.getColor());
+        nameLabel.setBounds(150, 5, 500, 20);
+        topPanel.add(nameLabel);
 
         if (typist == null)
         {
@@ -158,29 +165,31 @@ public class RacePanel
         JLabel iconLabel = getJLabel(typist);
         topPanel.add(iconLabel);
 
-        JLabel nameLabel = new JLabel(
-                typist.getName()
-                        + " | TYPE: " + typist.getConfig().getTypingStyle()
+        JLabel statsLabel = new JLabel(
+                    "TYPE: " + typist.getConfig().getTypingStyle()
+                        + " | KEYBOARD: " + typist.getConfig().getKeyboardType()
                         + " | Accuracy: " + String.format("%.2f", typist.getAccuracy())
                         + " | WPM: " + String.format("%.2f", race.calculateWPM(typist))
         );
 
-        nameLabel.setFont(new Font("SansSerif", Font.PLAIN, 15));
-        nameLabel.setBounds(10, 35, 520, 20);
-        topPanel.add(nameLabel);
+        statsLabel.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        statsLabel.setBounds(10, 35, 700, 20);
+        topPanel.add(statsLabel);
 
         if (typist.isBurntOut())
         {
             JLabel burnout = new JLabel("BURNT OUT (" + typist.getBurnoutTurnsRemaining() + " turns)");
+            burnout.setFont(new Font("SansSerif", Font.BOLD, 15));
             burnout.setForeground(new Color(190, 50, 50));
-            burnout.setBounds(540, 35, 300, 20);
+            burnout.setBounds(540, 10, 300, 20);
             topPanel.add(burnout);
         }
         else if (typist.hasJustMistyped())
         {
             JLabel mistyped = new JLabel("Just mistyped");
+            mistyped.setFont(new Font("SansSerif", Font.BOLD, 15));
             mistyped.setForeground(new Color(210, 120, 0));
-            mistyped.setBounds(540, 35, 300, 20);
+            mistyped.setBounds(540, 10, 300, 20);
             topPanel.add(mistyped);
         }
         else if (race.getWinner() != null)
@@ -188,15 +197,17 @@ public class RacePanel
             if (Objects.equals(race.getWinner().getName(), typist.getName()))
             {
                 JLabel won = new JLabel("YOU WIN");
+                won.setFont(new Font("SansSerif", Font.BOLD, 15));
                 won.setForeground(new Color(0, 250, 0));
-                won.setBounds(540, 35, 300, 20);
+                won.setBounds(540, 10, 300, 20);
                 typist.setColor(Color.GREEN);
                 topPanel.add(won);
             }
             else{
                 JLabel lost = new JLabel("YOU LOST");
+                lost.setFont(new Font("SansSerif", Font.BOLD, 15));
                 lost.setForeground(new Color(250, 0, 0));
-                lost.setBounds(540, 35, 300, 20);
+                lost.setBounds(540, 10, 300, 20);
                 typist.setColor(Color.RED);
                 topPanel.add(lost);
             }
@@ -217,41 +228,19 @@ public class RacePanel
     }
 
     private JLabel getJLabel(Typist typist) {
-        JLabel iconLabel = new JLabel(String.valueOf(typist.getSymbol()), SwingConstants.CENTER);
-        iconLabel.setOpaque(true);
-        iconLabel.setBackground(typist.getColor());
-        iconLabel.setForeground(Color.WHITE);
-        iconLabel.setFont(new Font("Dialog", Font.BOLD, 16));
 
-        int progress = typist.getProgress();
-        int passageLength = race.getPassageText().length();
+            JLabel iconLabel = new JLabel(String.valueOf(typist.getSymbol()), SwingConstants.CENTER);
+            iconLabel.setOpaque(true);
+            iconLabel.setBackground(typist.getColor());
+            iconLabel.setForeground(Color.WHITE);
+            iconLabel.setFont(new Font("Dialog", Font.BOLD, 16));
 
-        if (progress < 0)
-        {
-            progress = 0;
-        }
+            int iconWidth = 25;
+            int iconHeight = 25;
 
-        if (progress > passageLength)
-        {
-            progress = passageLength;
-        }
+            iconLabel.setBounds(100, 5, iconWidth, iconHeight);
 
-        double progressPercent = 0;
-
-        if (passageLength > 0)
-        {
-            progressPercent = (double) progress / passageLength;
-        }
-
-        int movementStartX = 110;
-        int movementWidth = 800;
-        int iconWidth = 30;
-        int iconHeight = 25;
-
-        int iconX = movementStartX + (int) (progressPercent * (movementWidth - iconWidth));
-
-        iconLabel.setBounds(iconX, 5, iconWidth, iconHeight);
-        return iconLabel;
+            return iconLabel;
     }
 
     /**
@@ -280,11 +269,26 @@ public class RacePanel
 
         StyledDocument document = passagePane.getStyledDocument();
 
-        Style correctStyle = passagePane.addStyle("Correct", null);
-        StyleConstants.setForeground(correctStyle, new Color(60, 140, 255));
 
+        Style correctStyle = passagePane.addStyle("Correct", null);
+
+        Color typistColor = typist.getColor();
+
+        // fallback in case typist coplor is null
+        if (typistColor == null) {
+            typistColor = new Color(60, 140, 255);
+        }
+
+        StyleConstants.setForeground(correctStyle, typistColor);
+
+        // correct typed text uses the typist/icon colour
+        StyleConstants.setBackground(correctStyle, typistColor);
+        StyleConstants.setForeground(correctStyle, Color.WHITE);
+        StyleConstants.setBold(correctStyle, true);
+
+        // cursor also uses the typist/icon colour
         Style cursorStyle = passagePane.addStyle("Cursor", null);
-        StyleConstants.setForeground(cursorStyle, Color.BLACK);
+        StyleConstants.setForeground(cursorStyle, typistColor);
         StyleConstants.setBold(cursorStyle, true);
 
         Style remainingStyle = passagePane.addStyle("Remaining", null);
