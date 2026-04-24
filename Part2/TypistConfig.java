@@ -38,9 +38,9 @@ public class TypistConfig {
 
         if (energyDrink) {
             if (progress < passageLength / 2) {
-                bonus += 0.06;
+                bonus += 0.16;
             } else {
-                bonus -= 0.06;
+                bonus -= 0.16;
             }
         }
 
@@ -77,7 +77,7 @@ public class TypistConfig {
         }
 
         if (headphones) {
-            multiplier *= 0.75;
+            multiplier *= 0.70; // fewer mistypes
         }
 
         return multiplier;
@@ -98,6 +98,8 @@ public class TypistConfig {
 
         return multiplier;
     }
+
+
 
     public int getBurnoutDurationModifier() {
         if (wristSupport) {
@@ -162,4 +164,5 @@ public class TypistConfig {
     public void setHeadphones(boolean headphones) {
         this.headphones = headphones;
     }
+
 }

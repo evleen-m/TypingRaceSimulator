@@ -1,4 +1,7 @@
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Represents a typist in the typing race.
@@ -20,24 +23,48 @@ public class Typist
 
     private TypistConfig config;
 
+    private final ArrayList<String> names = new ArrayList<>(Arrays.asList(
+            "TURBO-FINGERS",
+            "QWERTY_QUEEN",
+            "HUNT_N_PECK",
+            "KEY-SMASHER",
+            "SPEED_TYPER",
+            "CTRL_MASTER",
+            "SHIFT_WARRIOR",
+            "BYTE_BLAZER",
+            "CODE_TYPHOON",
+            "RAPID_KEYS"
+    ));
+
 
     /**
      * Creates a new typist with a given symbol, name, and accuracy rating.
      *
      * @param typistSymbol a single Unicode character representing this typist
-     * @param typistName the name of the typist
-     * @param typistAccuracy the typist's accuracy rating, between 0.0 and 1.0
      */
-    public Typist(char typistSymbol, String typistName, double typistAccuracy)
+    public Typist(char typistSymbol)
     {
-        this.typistName = typistName;
+        typistName = pickTypistName();
         this.typistSymbol = typistSymbol;
-        this.progress = 0;
-        this.burntOut = false;
-        this.burntOutTurnsRemaining = 0;
-        this.accuracyRating = typistAccuracy;
-        INITAL_ACCURACY = typistAccuracy;
-        this.justMistyped = false;
+        progress = 0;
+        burntOut = false;
+        burntOutTurnsRemaining = 0;
+        accuracyRating = randTypistAccuracy();
+        INITAL_ACCURACY = accuracyRating;
+        justMistyped = false;
+    }
+
+    private double randTypistAccuracy() {
+        double num = Math.random();
+        // create variation -> ensures some weaker and stronger but most are mid-capability
+        if (num < 0.2) {
+            num = 0.50 + Math.random() * 0.08; // weaker
+        } else if (num < 0.8) {
+            num = 0.58 + Math.random() * 0.17; // average
+        } else {
+            num = 0.75 + Math.random() * 0.10; // stronger
+        }
+        return num;
     }
 
     public double getINITAL_ACCURACY() {
@@ -178,6 +205,15 @@ public class Typist
     public Color getColor()
     {
         return color;
+    }
+
+    private String pickTypistName() {
+        Random rand = new Random();
+        if (names.isEmpty()) {
+            return "NO_NAMES_LEFT";
+        }
+        int index = rand.nextInt(names.size());
+        return names.remove(index); // removes so it can't repeat
     }
 
 

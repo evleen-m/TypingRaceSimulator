@@ -27,24 +27,14 @@ public class Game {
     private boolean finished = false;
     private Typist winner = null;
 
+    // difficulty modifiers
     private boolean autocorrectOn = false;
     private boolean nightShiftOn = false;
     private boolean coffeeModeOn = false;
 
 
-    // difficulty modifiers
-    private final ArrayList<String> names = new ArrayList<>(Arrays.asList(
-            "TURBO-FINGERS",
-            "QWERTY_QUEEN",
-            "HUNT_N_PECK",
-            "KEY-SMASHER",
-            "SPEED_TYPER",
-            "CTRL_MASTER",
-            "SHIFT_WARRIOR",
-            "BYTE_BLAZER",
-            "CODE_TYPHOON",
-            "RAPID_KEYS"
-    ));
+
+
 
 
     // empty game object
@@ -78,19 +68,15 @@ public class Game {
     {
         for (int i = 0; i < numberOfSeats; i++)
         {
-            //char symbol = (char) (0x24B6 + i);
-            String name = pickTypistName();
-            double accuracy = randTypistAccuracy();
-
-            if (nightShiftOn)
-            {
-                accuracy = accuracy - 0.07;
-            }
-
             String chosenSymbol = typistConfigs[i].getSymbol();
             char symbol = chosenSymbol.charAt(0);
 
-            Typist typist = new Typist(symbol, name, accuracy);
+            Typist typist = new Typist(symbol);
+
+            if (nightShiftOn)
+            {
+                typist.setAccuracy(typist.getAccuracy() - 0.07);
+            }
 
             typist.setConfig(typistConfigs[i]);
             typist.setColor(typistConfigs[i].getColour());
@@ -186,19 +172,36 @@ public class Game {
         //clamp accuracy
         accuracy = Math.max(0.0, Math.min(1.0, accuracy));
 
+        double mistypeChance = (1 - accuracy) * MISTYPE_BASE_CHANCE;
 
-        if (Math.random() < (1 - accuracy) * MISTYPE_BASE_CHANCE) {
+        if (config != null)
+        {
+            mistypeChance = mistypeChance * config.getMistypeMultiplier();
+        }
+
+        if (Math.random() < mistypeChance) {
             theTypist.slideBack(slideBackAmount);
             theTypist.setJustMistyped(true);
-        } else if (Math.random() < accuracy) {
-            theTypist.typeCharacter();
+        }
+
+        else if (Math.random() < accuracy)
+        {
+            // set up speed for use in typing
+            double speedMultiplier = 1.0;
+            if (config != null)
+            {
+                speedMultiplier = config.getSpeedMultiplier();
+            }
+
+            typeWithSpeed(theTypist, speedMultiplier);
 
             // Caffeine Mode: speed boost for the first 10 turns
             if (coffeeModeOn && turnCount <= 10) {
                 if (Math.random() < 0.7) {
-                    theTypist.typeCharacter();
+                    typeWithSpeed(theTypist, speedMultiplier);
                 }
             }
+
         }
 
         double currentBurnoutRisk = burnoutRisk * accuracy * accuracy;
@@ -214,7 +217,31 @@ public class Game {
 
         if (Math.random() < currentBurnoutRisk) {
             theTypist.setAccuracy(theTypist.getAccuracy() - 0.04);
-            theTypist.burnOut(BURNOUT_DURATION);
+
+            // check if writst support -> decrease burnout turns by one if there is
+            int duration = BURNOUT_DURATION;
+            if (config != null)
+            {
+                duration += config.getBurnoutDurationModifier();
+            }
+            duration = Math.max(1, duration);
+            theTypist.burnOut(duration);
+        }
+    }
+
+    private void typeWithSpeed(Typist theTypist, double speedMultiplier)
+    {
+        int guaranteedCharacters = (int) speedMultiplier;
+        double extraCharacterChance = speedMultiplier - guaranteedCharacters;
+
+        for (int i = 0; i < guaranteedCharacters; i++)
+        {
+            theTypist.typeCharacter();
+        }
+
+        if (Math.random() < extraCharacterChance)
+        {
+            theTypist.typeCharacter();
         }
     }
 
@@ -289,27 +316,8 @@ public class Game {
         return winner;
     }
 
-    private String pickTypistName() {
-        Random rand = new Random();
-        if (names.isEmpty()) {
-            return "NO_NAMES_LEFT";
-        }
-        int index = rand.nextInt(names.size());
-        return names.remove(index); // removes so it can't repeat
-    }
 
-    private double randTypistAccuracy() {
-        double num = Math.random();
-        // create variation -> ensures some weaker and stronger but most are mid-capability
-        if (num < 0.2) {
-            num = 0.50 + Math.random() * 0.08; // weaker
-        } else if (num < 0.8) {
-            num = 0.58 + Math.random() * 0.17; // average
-        } else {
-            num = 0.75 + Math.random() * 0.10; // stronger
-        }
-        return num;
-    }
+
 
     public String getModifiers()
     {
