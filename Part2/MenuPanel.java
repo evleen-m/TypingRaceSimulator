@@ -24,6 +24,10 @@ public class MenuPanel
 
     private JComboBox<Integer> playerNumBox;
 
+    private JCheckBox autocorrectOnBox;
+    private JCheckBox coffeeModeOnBox;
+    private JCheckBox nightShiftOnBox;
+
     public MenuPanel(FrameManager parentFrame)
     {
         this.parentFrame = parentFrame;
@@ -42,8 +46,9 @@ public class MenuPanel
         title.setFont(title.getFont().deriveFont(24f));
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel centre = new JPanel(new GridLayout(4, 1, 10, 10));
+        JPanel centre = new JPanel(new GridLayout(5, 1, 10, 10));
 
+        // passage choice box + custom length
         JPanel presetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         presetPanel.add(new JLabel("Choose passage:"));
 
@@ -53,14 +58,6 @@ public class MenuPanel
 
         presetPanel.add(passageChoiceBox);
         centre.add(presetPanel);
-
-        JPanel playerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        playerPanel.add(new JLabel("Number of players:"));
-
-        playerNumBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
-        playerPanel.add(playerNumBox);
-
-        centre.add(playerPanel);
 
         JPanel customPanel = new JPanel(new BorderLayout());
         customPanel.add(new JLabel("Custom passage:"), BorderLayout.NORTH);
@@ -72,6 +69,32 @@ public class MenuPanel
         customPanel.add(new JScrollPane(customPassageArea), BorderLayout.CENTER);
         centre.add(customPanel);
 
+        // shoice number of players box
+        JPanel playerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        playerPanel.add(new JLabel("Number of players:"));
+
+        playerNumBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
+        playerPanel.add(playerNumBox);
+
+        centre.add(playerPanel);
+
+        // add difficulty modifiers
+        JPanel modifierPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        modifierPanel.add(new JLabel("Autocorrect On:"));
+        autocorrectOnBox = new JCheckBox();
+        modifierPanel.add(autocorrectOnBox);
+
+        modifierPanel.add(new JLabel("Coffee Mode:"));
+        coffeeModeOnBox = new JCheckBox();
+        modifierPanel.add(coffeeModeOnBox);
+
+        modifierPanel.add(new JLabel("Night Mode:"));
+        nightShiftOnBox = new JCheckBox();
+        modifierPanel.add(nightShiftOnBox);
+
+        centre.add(modifierPanel);
+
+        // create race button
         JButton startButton = new JButton("Create Race");
         startButton.addActionListener(e -> createRace());
 
@@ -97,9 +120,33 @@ public class MenuPanel
      */
     private void createRace()
     {
+        String passage = getPassageString();
+
+        Integer playerNumber = (Integer) playerNumBox.getSelectedItem();
+        if (playerNumber == null){
+            throw new RuntimeException("Invalid player number");
+        }
+
+        boolean autocorrectOnBoxSelected = autocorrectOnBox.isSelected();
+        boolean coffeeModeOnBoxSelected = coffeeModeOnBox.isSelected();
+        boolean nightShiftOnBoxSelected = nightShiftOnBox.isSelected();
+
+
+        GameConfig config = new GameConfig();
+        config.autocorrectOn = autocorrectOnBoxSelected;
+        config.coffeeModeOn = coffeeModeOnBoxSelected;
+        config.nightShiftOn = nightShiftOnBoxSelected;
+
+
+        parentFrame.startConfiguredRace(passage, playerNumber, config);
+    }
+
+
+    private String getPassageString() {
         String selected = (String) passageChoiceBox.getSelectedItem();
         String passage = shortPassage;
 
+        // check passage length
         if ("Medium".equals(selected))
         {
             passage = medPassage;
@@ -116,13 +163,6 @@ public class MenuPanel
                 passage = custom;
             }
         }
-
-        Integer playerNumber = (Integer) playerNumBox.getSelectedItem();
-
-        if (playerNumber == null){
-            throw new RuntimeException("Invalid player number");
-        }
-
-        parentFrame.startConfiguredRace(passage, playerNumber);
+        return passage;
     }
 }

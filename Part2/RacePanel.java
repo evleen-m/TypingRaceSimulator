@@ -86,6 +86,11 @@ public class RacePanel
         turns.setBorder(BorderFactory.createEmptyBorder(0, 25, 20, 25));
         lanesPanel.add(turns);
 
+        JLabel modifiers = new JLabel("Modifiers On: " + race.getModifiers());
+        modifiers.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        modifiers.setBorder(BorderFactory.createEmptyBorder(0, 25, 20, 25));
+        lanesPanel.add(modifiers);
+
         Typist[] seats = race.getSeats();
 
         for (int i = 0; i < race.getNumberOfSeats(); i++)

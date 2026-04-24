@@ -201,14 +201,21 @@ public class FrameManager
      *
      * @param passageText the selected passage text
      */
-    public void startConfiguredRace(String passageText, int playerNumber)
+    public void startConfiguredRace(String passageText, int playerNumber, GameConfig config)
     {
-        race.StartRace(passageText, playerNumber);
+        race.StartRace(passageText, playerNumber, config);
         racePanel.repaintRace();
         statusLabel.setText("Ready.");
         cardLayout.show(mainPanel, "RACE");
     }
 
+//    public void startConfiguredRace(GameConfig config)
+//    {
+//        race.StartRace(config.passageText, config.playerNumber,config);
+//        racePanel.repaintRace();
+//        statusLabel.setText("Ready.");
+//        cardLayout.show(mainPanel, "RACE");
+//    }
     /**
      * Shows the GUI window.
      */

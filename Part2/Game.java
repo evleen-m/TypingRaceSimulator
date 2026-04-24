@@ -17,13 +17,20 @@ public class Game {
     private int numberOfSeats;
 
     private final double MISTYPE_BASE_CHANCE = 0.3;
-    private final int SLIDE_BACK_AMOUNT = 3;
+    private int SLIDE_BACK_AMOUNT = 2;
     private final int BURNOUT_DURATION = 3;
+    private double burnoutRisk = 0.05;
 
     private int turnCount = 0;
     private boolean finished = false;
     private Typist winner = null;
 
+    private boolean autocorrectOn = false;
+    private boolean nightShiftOn = false;
+    private boolean coffeeModeOn = false;
+
+
+    // difficulty modifiers
 
     private final ArrayList<String> names = new ArrayList<>(Arrays.asList(
             "TURBO-FINGERS",
@@ -50,6 +57,7 @@ public class Game {
         createTypists();
     }
 
+    // base version
     public void StartRace(String passageText, int playerNumber) {
         resetRace();
         numberOfSeats = playerNumber;
@@ -58,6 +66,34 @@ public class Game {
 
         seats = new Typist[numberOfSeats + 1];
         Arrays.fill(seats, null);
+
+        createTypists();
+    }
+
+    // version with difficulty modifiers
+    public void StartRace(String passageText, int playerNumber,GameConfig config) {
+        resetRace();
+        numberOfSeats = playerNumber;
+        setPassageText(passageText);
+
+        seats = new Typist[numberOfSeats + 1];
+        Arrays.fill(seats, null);
+
+        // check the global modifiers
+        if (config.autocorrectOn)
+        {
+            autocorrectOn = true;
+            SLIDE_BACK_AMOUNT = SLIDE_BACK_AMOUNT/2;
+        }
+        if (config.coffeeModeOn)
+        {
+            coffeeModeOn = true;
+        }
+        if (config.nightShiftOn)
+        {
+            nightShiftOn = true;
+        }
+
 
         createTypists();
     }
@@ -84,6 +120,9 @@ public class Game {
         turnCount = 0;
         finished = false;
         winner = null;
+        autocorrectOn = false;
+        nightShiftOn = false;
+        coffeeModeOn = false;
 
         for (int i = 0; i < numberOfSeats; i++) {
             if (seats[i] != null) {
@@ -132,15 +171,31 @@ public class Game {
             return;
         }
 
-        if (Math.random() < (1 - theTypist.getAccuracy()) * MISTYPE_BASE_CHANCE) {
+        double accuracy = theTypist.getAccuracy();
+
+        if (Math.random() < (1 - accuracy) * MISTYPE_BASE_CHANCE) {
             theTypist.slideBack(SLIDE_BACK_AMOUNT);
             theTypist.setJustMistyped(true);
-        } else if (Math.random() < theTypist.getAccuracy()) {
+        } else if (Math.random() < accuracy) {
             theTypist.typeCharacter();
+
+            // Caffeine Mode: speed boost for the first 10 turns
+            if (coffeeModeOn && turnCount <= 10) {
+                if (Math.random() < 0.7) {
+                    theTypist.typeCharacter();
+                }
+            }
         }
 
-        if (Math.random() < 0.05 * theTypist.getAccuracy() * theTypist.getAccuracy()) {
-            theTypist.setAccuracy(theTypist.getAccuracy() - 0.02);
+        double currentBurnoutRisk = burnoutRisk * accuracy * accuracy;
+
+        // Caffeine Mode: after 10 turns, burnout risk increases exponentially
+        if (coffeeModeOn && turnCount > 10) {
+            currentBurnoutRisk = currentBurnoutRisk * 3;
+        }
+
+        if (Math.random() < currentBurnoutRisk) {
+            theTypist.setAccuracy(theTypist.getAccuracy() - 0.04);
             theTypist.burnOut(BURNOUT_DURATION);
         }
     }
@@ -155,86 +210,6 @@ public class Game {
         return (theTypist.getProgress() >= passageLength);
     }
 
-    /**
-     * Prints the current state of the race to the terminal.
-     */
-    private void printRace() {
-        System.out.print('\u000C');
-
-        System.out.println("  TYPING RACE — passage length: " + passageLength + " chars");
-        multiplePrint('=', passageLength + 3);
-        System.out.println();
-
-        for (int i = 0; i < numberOfSeats; i++) {
-            if (seats[i] != null) {
-                printSeat(seats[i]);
-            }
-            System.out.println();
-        }
-
-        multiplePrint('=', passageLength + 3);
-        System.out.println();
-        System.out.println("  [~] = burnt out    [<] = just mistyped");
-    }
-
-    /**
-     * Prints a single typist's lane.
-     *
-     * @param theTypist the typist whose lane to print
-     */
-    private void printSeat(Typist theTypist) {
-        int spacesBefore = theTypist.getProgress();
-        int spacesAfter = passageLength - theTypist.getProgress();
-
-        if (spacesAfter < 0) {
-            spacesAfter = 0;
-        }
-
-        System.out.print('|');
-        multiplePrint(' ', spacesBefore);
-
-        System.out.print(theTypist.getSymbol());
-
-        if (theTypist.hasJustMistyped()) {
-            System.out.print('<');
-            spacesAfter--;
-        }
-
-        if (theTypist.isBurntOut()) {
-            System.out.print('~');
-            spacesAfter--;
-        }
-
-        if (spacesAfter < 0) {
-            spacesAfter = 0;
-        }
-
-        multiplePrint(' ', spacesAfter);
-        System.out.print('|');
-        System.out.print(' ');
-
-        if (theTypist.isBurntOut()) {
-            System.out.print(theTypist.getName()
-                    + " (Accuracy: " + String.format("%.2f", theTypist.getAccuracy()) + ")"
-                    + " BURNT OUT (" + theTypist.getBurnoutTurnsRemaining() + " turns)");
-        } else {
-            System.out.print(theTypist.getName() + " (Accuracy: "
-                    + String.format("%.2f", theTypist.getAccuracy())
-                    + ", WPM: " + String.format("%.2f", calculateWPM(theTypist)) + ")");
-        }
-    }
-
-    /**
-     * Prints a character a given number of times.
-     *
-     * @param aChar the character to print
-     * @param times how many times to print it
-     */
-    private void multiplePrint(char aChar, int times) {
-        for (int i = 0; i < times; i++) {
-            System.out.print(aChar);
-        }
-    }
 
     /**
      * Calculates the current WPM for a typist.
@@ -296,14 +271,22 @@ public class Game {
         return winner;
     }
 
+    // base version -> no modifiers
     private void createTypists() {
         for (int i = 0; i < numberOfSeats; i++) {
             char symbol = (char) (0x24B6 + i);
             String name = pickTypistName();
             double accuracy = randTypistAccuracy();
+
+            // Night Shift: Accuracy ratings are slightly reduced across the board
+            if (nightShiftOn) {
+                accuracy = accuracy - 0.05;
+            }
+
             addTypist(new Typist(symbol, name, accuracy), i);
         }
     }
+
 
     private String pickTypistName() {
         Random rand = new Random();
@@ -325,5 +308,24 @@ public class Game {
             num = 0.75 + Math.random() * 0.10; // stronger
         }
         return num;
+    }
+
+    public String getModifiers()
+    {
+        String msg = "";
+        if (autocorrectOn){
+            msg = msg + "\n Autocorrect";
+        }
+        if (coffeeModeOn){
+            msg = msg + "\n Coffee Mode";
+        }
+        if (nightShiftOn){
+            msg = msg + "\n Night Shift";
+        }
+
+        if (msg.isEmpty()) {
+            return " N/A";
+        }
+        return msg;
     }
 }
