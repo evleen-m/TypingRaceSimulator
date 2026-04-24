@@ -1,16 +1,21 @@
 import javax.swing.*;
+import javax.swing.text.*;
 import java.awt.*;
 import java.util.Objects;
 
 /**
- * Builds and manages the race display panel. * Uses composition instead of extending JPanel.
+ * Builds and manages the race display panel.
+ * Uses composition instead of extending JPanel.
  */
-public class RacePanel {
+public class RacePanel
+{
     private Game race;
     private JPanel mainPanel;
-    private JPanel drawingPanel;
+    private JPanel lanesPanel;
+    private JScrollPane scrollPane;
 
-    public RacePanel(Game game) {
+    public RacePanel(Game game)
+    {
         race = game;
         buildPanel();
     }
@@ -18,122 +23,276 @@ public class RacePanel {
     /**
      * Builds the panel structure.
      */
-    private void buildPanel() {
+    private void buildPanel()
+    {
         mainPanel = new JPanel(new BorderLayout());
-        drawingPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                drawRace(g);
-            }
-        };
-        drawingPanel.setBackground(new Color(245, 247, 250));
-        mainPanel.add(drawingPanel, BorderLayout.CENTER);
+
+        lanesPanel = new JPanel();
+        lanesPanel.setLayout(new BoxLayout(lanesPanel, BoxLayout.Y_AXIS));
+        lanesPanel.setBackground(new Color(245, 247, 250));
+
+        scrollPane = new JScrollPane(lanesPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        buildRaceDisplay();
     }
 
     /**
-     * Returns the main race panel. * * @return the race panel
+     * Returns the main race panel.
+     *
+     * @return the race panel
      */
-    public JPanel getPanel() {
+    public JPanel getPanel()
+    {
         return mainPanel;
     }
 
     /**
-     * Repaints the drawing area.
+     * Repaints the race display.
      */
-    public void repaintRace() {
-        drawingPanel.repaint();
+    public void repaintRace()
+    {
+        int scrollPosition = scrollPane.getVerticalScrollBar().getValue();
+
+        buildRaceDisplay();
+
+        lanesPanel.revalidate();
+        lanesPanel.repaint();
+
+        SwingUtilities.invokeLater(() -> {
+            scrollPane.getVerticalScrollBar().setValue(scrollPosition);
+        });
     }
 
     /**
-     * Draws the full race scene. * * @param g the graphics object
+     * Builds the full race scene.
      */
-    private void drawRace(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(new Color(35, 35, 35));
-        g2.setFont(new Font("SansSerif", Font.BOLD, 28));
-        g2.drawString("Typing Race", 25, 40);
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        g2.drawString("Passage length: " + race.getPassageLength() + " chars", 25, 70);
-        g2.drawString("Turns: " + race.getTurnCount(), 25, 92);
+    private void buildRaceDisplay()
+    {
+        lanesPanel.removeAll();
+
+        JLabel title = new JLabel("Typing Race");
+        title.setFont(new Font("SansSerif", Font.BOLD, 28));
+        title.setBorder(BorderFactory.createEmptyBorder(20, 25, 5, 25));
+        lanesPanel.add(title);
+
+        JLabel passageLength = new JLabel("Passage length: " + race.getPassageLength() + " chars");
+        passageLength.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        passageLength.setBorder(BorderFactory.createEmptyBorder(0, 25, 0, 25));
+        lanesPanel.add(passageLength);
+
+        JLabel turns = new JLabel("Turns: " + race.getTurnCount());
+        turns.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        turns.setBorder(BorderFactory.createEmptyBorder(0, 25, 20, 25));
+        lanesPanel.add(turns);
+
         Typist[] seats = race.getSeats();
-        int y = 140;
-        for (int i = 0; i < race.getNumberOfSeats(); i++) {
-            drawLane(g2, seats[i], i, y);
-            y += 145;
+
+        for (int i = 0; i < race.getNumberOfSeats(); i++)
+        {
+            lanesPanel.add(buildLane(seats[i], i));
         }
-        if (race.isFinished() && race.getWinner() != null) {
-            g2.setColor(new Color(0, 130, 60));
-            g2.setFont(new Font("SansSerif", Font.BOLD, 22));
-            g2.drawString("And the winner is... " + race.getWinner().getName() + "!", 25, 590);
-            g2.drawString("Final accuracy: " + String.format("%.2f", race.getWinner().getAccuracy()), 25, 620);
+
+        if (race.isFinished() && race.getWinner() != null)
+        {
+            JLabel winner = new JLabel("And the winner is... " + race.getWinner().getName() + "!");
+            winner.setForeground(new Color(0, 130, 60));
+            winner.setFont(new Font("SansSerif", Font.BOLD, 22));
+            winner.setBorder(BorderFactory.createEmptyBorder(20, 25, 5, 25));
+            lanesPanel.add(winner);
+
+            JLabel accuracy = new JLabel("Final accuracy: " + String.format("%.2f", race.getWinner().getAccuracy()));
+            accuracy.setForeground(new Color(0, 130, 60));
+            accuracy.setFont(new Font("SansSerif", Font.BOLD, 22));
+            accuracy.setBorder(BorderFactory.createEmptyBorder(0, 25, 20, 25));
+            lanesPanel.add(accuracy);
         }
     }
 
     /**
-     * Draws one typist lane showing progress through the actual passage text. * * @param g2 the graphics object * @param typist the typist in the lane * @param laneNumber the lane number * @param y the vertical position of the lane
+     * Builds one typist lane showing progress through the actual passage text.
+     *
+     * @param typist the typist in the lane
+     * @param laneNumber the lane number
+     * @return the lane panel
      */
-    private void drawLane(Graphics2D g2, Typist typist, int laneNumber, int y) {
-        int x = 25;
-        int width = 900;
-        int height = 85;
+    private JPanel buildLane(Typist typist, int laneNumber)
+    {
+        JPanel lanePanel = new JPanel(new BorderLayout(10, 10));
+        lanePanel.setBackground(Color.WHITE);
+        lanePanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(10, 25, 10, 25),
+                BorderFactory.createLineBorder(new Color(210, 210, 210))
+        ));
+
         laneNumber++;
 
-        g2.setColor(Color.WHITE);
-        g2.fillRoundRect(x, y, width, height, 18, 18);
-        g2.setColor(new Color(210, 210, 210));
-        g2.drawRoundRect(x, y, width, height, 18, 18);
-        g2.setColor(new Color(70, 70, 70));
-        g2.setFont(new Font("SansSerif", Font.BOLD, 15));
-        g2.drawString("Lane " + laneNumber, x, y - 8);
-        if (typist == null) {
-            g2.setFont(new Font("Monospaced", Font.PLAIN, 16));
-            g2.drawString("Empty seat", x + 15, y + 35);
-            return;
+        JPanel topPanel = new JPanel(null);
+        topPanel.setBackground(Color.WHITE);
+        topPanel.setPreferredSize(new Dimension(1000, 65));
+
+        JLabel laneLabel = new JLabel("Lane " + laneNumber);
+        laneLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
+        laneLabel.setBounds(10, 5, 100, 20);
+        topPanel.add(laneLabel);
+
+        if (typist == null)
+        {
+            JTextPane emptyPane = new JTextPane();
+            emptyPane.setEditable(false);
+            emptyPane.setText("Empty seat");
+            emptyPane.setFont(new Font("Monospaced", Font.PLAIN, 16));
+            emptyPane.setBackground(Color.WHITE);
+
+            lanePanel.add(topPanel, BorderLayout.NORTH);
+            lanePanel.add(emptyPane, BorderLayout.CENTER);
+
+            return lanePanel;
         }
-        String passage = race.getPassageText();
+
+        JLabel iconLabel = getJLabel(typist);
+        topPanel.add(iconLabel);
+
+        JLabel nameLabel = new JLabel(
+                typist.getName()
+                        + " | Accuracy: " + String.format("%.2f", typist.getAccuracy())
+                        + " | WPM: " + String.format("%.2f", race.calculateWPM(typist))
+        );
+
+        nameLabel.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        nameLabel.setBounds(10, 35, 520, 20);
+        topPanel.add(nameLabel);
+
+        if (typist.isBurntOut())
+        {
+            JLabel burnout = new JLabel("BURNT OUT (" + typist.getBurnoutTurnsRemaining() + " turns)");
+            burnout.setForeground(new Color(190, 50, 50));
+            burnout.setBounds(540, 35, 300, 20);
+            topPanel.add(burnout);
+        }
+        else if (typist.hasJustMistyped())
+        {
+            JLabel mistyped = new JLabel("Just mistyped");
+            mistyped.setForeground(new Color(210, 120, 0));
+            mistyped.setBounds(540, 35, 300, 20);
+            topPanel.add(mistyped);
+        }
+        else if (race.getWinner() != null)
+        {
+            if (Objects.equals(race.getWinner().getName(), typist.getName()))
+            {
+                JLabel won = new JLabel("YOU WIN");
+                won.setForeground(new Color(0, 250, 0));
+                won.setBounds(540, 35, 300, 20);
+                typist.setColor(Color.GREEN);
+                topPanel.add(won);
+            }
+            else{
+                JLabel lost = new JLabel("YOU LOST");
+                lost.setForeground(new Color(250, 0, 0));
+                lost.setBounds(540, 35, 300, 20);
+                typist.setColor(Color.RED);
+                topPanel.add(lost);
+            }
+        }
+
+        JTextPane passagePane = new JTextPane();
+        passagePane.setEditable(false);
+        passagePane.setFont(new Font("Monospaced", Font.PLAIN, 18));
+        passagePane.setBackground(Color.WHITE);
+        passagePane.setBorder(BorderFactory.createEmptyBorder(5, 15, 15, 15));
+
+        addStyledPassageText(passagePane, typist);
+
+        lanePanel.add(topPanel, BorderLayout.NORTH);
+        lanePanel.add(passagePane, BorderLayout.CENTER);
+
+        return lanePanel;
+    }
+
+    private JLabel getJLabel(Typist typist) {
+        JLabel iconLabel = new JLabel(String.valueOf(typist.getSymbol()), SwingConstants.CENTER);
+        iconLabel.setOpaque(true);
+        iconLabel.setBackground(typist.getColor());
+        iconLabel.setForeground(Color.WHITE);
+        iconLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+
         int progress = typist.getProgress();
-        if (progress < 0) {
+        int passageLength = race.getPassageText().length();
+
+        if (progress < 0)
+        {
             progress = 0;
         }
-        if (progress > passage.length()) {
+
+        if (progress > passageLength)
+        {
+            progress = passageLength;
+        }
+
+        double progressPercent = 0;
+
+        if (passageLength > 0)
+        {
+            progressPercent = (double) progress / passageLength;
+        }
+
+        int movementStartX = 110;
+        int movementWidth = 800;
+        int iconWidth = 30;
+        int iconHeight = 25;
+
+        int iconX = movementStartX + (int) (progressPercent * (movementWidth - iconWidth));
+
+        iconLabel.setBounds(iconX, 5, iconWidth, iconHeight);
+        return iconLabel;
+    }
+
+    /**
+     * Adds styled passage text with correct characters coloured and cursor shown.
+     *
+     * @param passagePane the text pane to display the passage
+     * @param typist the typist in the lane
+     */
+    private void addStyledPassageText(JTextPane passagePane, Typist typist)
+    {
+        String passage = race.getPassageText();
+        int progress = typist.getProgress();
+
+        if (progress < 0)
+        {
+            progress = 0;
+        }
+
+        if (progress > passage.length())
+        {
             progress = passage.length();
         }
+
         String completed = passage.substring(0, progress);
         String remaining = passage.substring(progress);
-        int textX = x + 20;
-        int textY = y + 38;
-        g2.setFont(new Font("Monospaced", Font.PLAIN, 18));
-        g2.setColor(new Color(60, 140, 255));
-        g2.drawString(completed, textX, textY);
-        int completedWidth = g2.getFontMetrics().stringWidth(completed);
-        g2.setColor(new Color(130, 130, 130));
-        g2.drawString(remaining, textX + completedWidth, textY);
-        int cursorX = textX + completedWidth; // circle position and size
-        int circleDiameter = 16;
-        int circleX = cursorX;
-        int circleY = y + 7; // draw coloured circle
-        g2.setColor(typist.getColor());
-        g2.fillOval(circleX, circleY, circleDiameter, circleDiameter); // draw unicode symbol on top
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Dialog", Font.BOLD, 16));
-        g2.drawString(String.valueOf(typist.getSymbol()), cursorX, y + 21);
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 15));
-        g2.setColor(new Color(40, 40, 40));
-        g2.drawString(typist.getName() + " | Accuracy: " + String.format("%.2f", typist.getAccuracy()) + " | WPM: " + String.format("%.2f", race.calculateWPM(typist)), x + 15, y + 68);
-        if (typist.isBurntOut()) {
-            g2.setColor(new Color(190, 50, 50));
-            g2.drawString("BURNT OUT (" + typist.getBurnoutTurnsRemaining() + " turns)", x + 520, y + 68);
-        } else if (typist.hasJustMistyped()) {
-            g2.setColor(new Color(210, 120, 0));
-            g2.drawString("Just mistyped", x + 520, y + 68);
-        } else if (race.getWinner() != null) {
-            if (Objects.equals(race.getWinner().getName(), typist.getName())) {
-                g2.setColor(new Color(0, 250, 0));
-                typist.setColor(Color.GREEN);
-                g2.drawString("WON", x + 520, y + 68);
-            }
+
+        StyledDocument document = passagePane.getStyledDocument();
+
+        Style correctStyle = passagePane.addStyle("Correct", null);
+        StyleConstants.setForeground(correctStyle, new Color(60, 140, 255));
+
+        Style cursorStyle = passagePane.addStyle("Cursor", null);
+        StyleConstants.setForeground(cursorStyle, Color.BLACK);
+        StyleConstants.setBold(cursorStyle, true);
+
+        Style remainingStyle = passagePane.addStyle("Remaining", null);
+        StyleConstants.setForeground(remainingStyle, new Color(130, 130, 130));
+
+        try
+        {
+            document.insertString(document.getLength(), completed, correctStyle);
+            document.insertString(document.getLength(), "|", cursorStyle);
+            document.insertString(document.getLength(), remaining, remainingStyle);
+        }
+        catch (BadLocationException e)
+        {
+            e.printStackTrace();
         }
     }
 }

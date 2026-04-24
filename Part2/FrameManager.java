@@ -15,15 +15,20 @@ public class FrameManager
 
     private CardLayout cardLayout;
     private JPanel mainPanel;
+    private boolean stopNextTick = false;
 
     public FrameManager(Game game)
     {
         race = game;
-        //set up frame for all panels to be within
+
+        // set up frame for all panels to be within
         frame = new JFrame("Typing Race GAME");
         frame.setSize(1500, 900);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
+
+        // set up menu bar (proper Swing structure)
+        buildMenuBar();
 
         // set up switching between panels -> create main panel
         cardLayout = new CardLayout();
@@ -38,16 +43,23 @@ public class FrameManager
         mainPanel.add(buildRaceScreen(), "RACE");
 
         // add the panels to frame
-        frame.add(mainPanel);
+        frame.setContentPane(mainPanel);
 
         // game loop controls
         timer = new Timer(200, e -> {
             race.advanceOneTurn();
             racePanel.repaintRace();
 
-            if (race.isFinished())
+            if (stopNextTick)
             {
                 timer.stop();
+                stopNextTick = false;
+                return;
+            }
+
+            if (race.isFinished())
+            {
+                stopNextTick = true;
                 statusLabel.setText("Winner: " + race.getWinner().getName());
             }
             else
@@ -57,6 +69,39 @@ public class FrameManager
         });
 
         cardLayout.show(mainPanel, "MENU");
+    }
+
+    /**
+     * Builds the menu bar.
+     */
+    private void buildMenuBar()
+    {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu gameMenu = new JMenu("Game");
+
+        JMenuItem setupItem = new JMenuItem("Back to Setup");
+        JMenuItem exitItem = new JMenuItem("Exit");
+
+        // action if setup selected
+        setupItem.addActionListener(e -> {
+            if (timer != null)
+            {
+                timer.stop();
+            }
+            cardLayout.show(mainPanel, "MENU");
+        });
+
+        // action if exit selected
+        exitItem.addActionListener(e -> frame.dispose());
+
+        gameMenu.add(setupItem);
+        gameMenu.addSeparator();
+        gameMenu.add(exitItem);
+
+        menuBar.add(gameMenu);
+
+        frame.setJMenuBar(menuBar);
     }
 
     /**
@@ -89,7 +134,7 @@ public class FrameManager
         JButton resetButton = new JButton("Reset");
         JButton setupButton = new JButton("Back to Setup");
 
-        // ation if start clicked
+        // action if start clicked
         startButton.addActionListener(e -> {
             if (!race.isFinished())
             {
@@ -98,7 +143,7 @@ public class FrameManager
             }
         });
 
-        // action is paused clicked
+        // action if pause clicked
         pauseButton.addActionListener(e -> {
             timer.stop();
             statusLabel.setText("Paused.");
@@ -159,8 +204,6 @@ public class FrameManager
     public void startConfiguredRace(String passageText, int playerNumber)
     {
         race.StartRace(passageText, playerNumber);
-        //race.setPassageText(passageText);
-        //race.resetRace();
         racePanel.repaintRace();
         statusLabel.setText("Ready.");
         cardLayout.show(mainPanel, "RACE");

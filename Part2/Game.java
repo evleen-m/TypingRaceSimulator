@@ -88,8 +88,10 @@ public class Game {
         for (int i = 0; i < numberOfSeats; i++) {
             if (seats[i] != null) {
                 seats[i].resetToStart();
+                seats[i].setRandColor();
             }
         }
+
     }
 
     /**
@@ -296,7 +298,7 @@ public class Game {
 
     private void createTypists() {
         for (int i = 0; i < numberOfSeats; i++) {
-            char symbol = (char) (0x24B5 + i);
+            char symbol = (char) (0x24B6 + i);
             String name = pickTypistName();
             double accuracy = randTypistAccuracy();
             addTypist(new Typist(symbol, name, accuracy), i);

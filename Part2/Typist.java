@@ -161,7 +161,7 @@ public class Typist
         }
     }
 
-    private void setRandColor()
+    public void setRandColor()
     {
         int r = (int)(Math.random() * 256);
         int g = (int)(Math.random() * 156);

@@ -42,7 +42,7 @@ public class MenuPanel
         title.setFont(title.getFont().deriveFont(24f));
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel centre = new JPanel(new GridLayout(3, 1, 10, 10));
+        JPanel centre = new JPanel(new GridLayout(4, 1, 10, 10));
 
         JPanel presetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         presetPanel.add(new JLabel("Choose passage:"));
@@ -54,6 +54,14 @@ public class MenuPanel
         presetPanel.add(passageChoiceBox);
         centre.add(presetPanel);
 
+        JPanel playerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        playerPanel.add(new JLabel("Number of players:"));
+
+        playerNumBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
+        playerPanel.add(playerNumBox);
+
+        centre.add(playerPanel);
+
         JPanel customPanel = new JPanel(new BorderLayout());
         customPanel.add(new JLabel("Custom passage:"), BorderLayout.NORTH);
 
@@ -63,9 +71,6 @@ public class MenuPanel
 
         customPanel.add(new JScrollPane(customPassageArea), BorderLayout.CENTER);
         centre.add(customPanel);
-
-        playerNumBox = new JComboBox<>(new Integer[] { 2, 3, 4, 5, 6 });
-        presetPanel.add(playerNumBox);
 
         JButton startButton = new JButton("Create Race");
         startButton.addActionListener(e -> createRace());
