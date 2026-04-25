@@ -7,6 +7,7 @@ import java.util.ArrayList;
  */
 public class WpmLineGraphPanel extends JPanel
 {
+    //
     private Game race;
 
     public WpmLineGraphPanel(Game race)
@@ -59,7 +60,7 @@ public class WpmLineGraphPanel extends JPanel
         {
             if (typists[i] != null)
             {
-                ArrayList<Double> history = stats.getWpmHistory(i);
+                ArrayList<Double> history = stats.getWpmHistory(typists[i].getName());
 
                 for (int j = 0; j < history.size(); j++)
                 {
@@ -105,7 +106,7 @@ public class WpmLineGraphPanel extends JPanel
         {
             if (typists[i] != null)
             {
-                ArrayList<Double> history = stats.getWpmHistory(i);
+                ArrayList<Double> history = stats.getWpmHistory(typists[i].getName());
 
                 if (history.size() < 2)
                 {

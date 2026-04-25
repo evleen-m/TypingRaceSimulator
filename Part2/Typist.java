@@ -1,7 +1,5 @@
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Represents a typist in the typing race.
@@ -24,8 +22,6 @@ public class Typist
 
     private TypistConfig config;
 
-
-
     // stats vars// stats vars
     private int correctKeystrokes = 0;
     private int mistypes = 0;
@@ -33,7 +29,7 @@ public class Typist
     private double startingAccuracy;
     private int finishTurn = 0;
     private int finishPosition = 0;
-
+    private ArrayList<Integer> burnoutTurns = new ArrayList<>();
 
     /**
      * Creates a new typist with a given symbol, name, and accuracy rating.
@@ -157,6 +153,7 @@ public class Typist
         finishTurn = 0;
         finishPosition = 0;
         startingAccuracy = accuracyRating;
+        burnoutTurns.clear();
 
     }
 
@@ -212,7 +209,6 @@ public class Typist
         }
     }
 
-
     public void setColor(Color color)
     {
         this.color = color;
@@ -230,9 +226,6 @@ public class Typist
     public void setConfig(TypistConfig config) {
         this.config = config;
     }
-
-
-
 
     public int getFinishTurn()
     {
@@ -254,8 +247,6 @@ public class Typist
         this.finishPosition = finishPosition;
     }
 
-
-
     public void recordCorrectKeystroke()
     {
         correctKeystrokes++;
@@ -269,6 +260,12 @@ public class Typist
     public void recordBurnout()
     {
         burnoutCount++;
+    }
+
+    public void recordBurnout(int turnNumber)
+    {
+        burnoutCount++;
+        burnoutTurns.add(turnNumber);
     }
 
     public double getAccuracyPercentage()
@@ -288,6 +285,11 @@ public class Typist
         return burnoutCount;
     }
 
+    public ArrayList<Integer> getBurnoutTurns()
+    {
+        return burnoutTurns;
+    }
+
     public void setStartingAccuracy(double startingAccuracy)
     {
         this.startingAccuracy = startingAccuracy;
@@ -297,5 +299,4 @@ public class Typist
     {
         return getAccuracy() - startingAccuracy;
     }
-
 }

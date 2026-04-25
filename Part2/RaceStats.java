@@ -1,158 +1,191 @@
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
- * Stores race statistics.
- * Keeps current race WPM history and long-term race history.
+ * Calculates race statistics and stores/reads historical typist data.
  */
 public class RaceStats
 {
-    private ArrayList<ArrayList<Double>> wpmHistory;
-    private ArrayList<ArrayList<RaceRecord>> raceHistory;
-    private double[] personalBestWpm;
-    private int raceNumber = 0;
+    private static final String FILE_PATH = System.getProperty("user.home") + "/temp/cs/typing-race-history.txt";
+    private HashMap<String, RawData> typistData;
+    private HashMap<String, ArrayList<Double>> wpmHistory;
+    private int raceNumber;
 
-    public RaceStats(int numberOfTypists)
+    public RaceStats()
     {
-        wpmHistory = new ArrayList<>();
-        raceHistory = new ArrayList<>();
-        personalBestWpm = new double[numberOfTypists];
+        typistData = new HashMap<>();
+        wpmHistory = new HashMap<>();
+        raceNumber = 0;
 
-        // create one history list for each typist
-        for (int i = 0; i < numberOfTypists; i++)
+        checkForDataFile();
+        loadHistoryFromFile();
+    }
+
+    public void reset()
+    {
+        wpmHistory.clear();
+    }
+
+    private void checkForDataFile()
+    {
+        try
         {
-            wpmHistory.add(new ArrayList<>());
-            raceHistory.add(new ArrayList<>());
-            personalBestWpm[i] = 0;
+            File file = new File(FILE_PATH);
+
+            File parent = file.getParentFile();
+            if (parent != null && !parent.exists())
+            {
+                parent.mkdirs();
+            }
+
+            if (!file.exists())
+            {
+                file.createNewFile();
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Records one WPM value for a typist during the current race.
-     *
-     * @param typistIndex the typist index
-     * @param wpm the WPM value
-     */
-    public void recordWPM(int typistIndex, double wpm)
+    private void loadHistoryFromFile()
     {
-        if (typistIndex >= 0 && typistIndex < wpmHistory.size())
+        typistData.clear();
+        raceNumber = 0;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH)))
         {
-            wpmHistory.get(typistIndex).add(wpm);
+            String line;
+
+            while ((line = reader.readLine()) != null)
+            {
+                if (line.trim().isEmpty())
+                {
+                    continue;
+                }
+
+                RaceRecord record = RaceRecord.fromFileLine(line);
+                addRecordToRawData(record);
+
+                if (record.getRaceNumber() > raceNumber)
+                {
+                    raceNumber = record.getRaceNumber();
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Gets the current race WPM history for one typist.
-     *
-     * @param typistIndex the typist index
-     * @return the WPM history
-     */
-    public ArrayList<Double> getWpmHistory(int typistIndex)
+    private void addRecordToRawData(RaceRecord record)
     {
-        if (typistIndex >= 0 && typistIndex < wpmHistory.size())
+        String typistName = record.getTypistName();
+
+        if (!typistData.containsKey(typistName))
         {
-            return wpmHistory.get(typistIndex);
+            typistData.put(typistName, new RawData(typistName));
         }
 
-        return new ArrayList<>();
+        typistData.get(typistName).addRaceRecord(record);
     }
 
-    /**
-     * Finds the longest WPM history.
-     *
-     * @return the most recorded turns
-     */
+    public void recordWPM(String typistName, double wpm)
+    {
+        if (!wpmHistory.containsKey(typistName))
+        {
+            wpmHistory.put(typistName, new ArrayList<>());
+        }
+
+        wpmHistory.get(typistName).add(wpm);
+    }
+
+    public ArrayList<Double> getWpmHistory(String typistName)
+    {
+        if (!wpmHistory.containsKey(typistName))
+        {
+            return new ArrayList<>();
+        }
+
+        return wpmHistory.get(typistName);
+    }
+
     public int getLongestHistory()
     {
         int longest = 0;
 
-        for (int i = 0; i < wpmHistory.size(); i++)
+        for (ArrayList<Double> history : wpmHistory.values())
         {
-            longest = Math.max(longest, wpmHistory.get(i).size());
+            if (history.size() > longest)
+            {
+                longest = history.size();
+            }
         }
 
         return longest;
     }
 
-    /**
-     * Saves a completed race into long-term history.
-     *
-     * @param typists the typists in the race
-     * @param race the race object
-     */
-    public void saveCompletedRace(Typist[] typists, Game race)
+    public void saveCompletedRace(Typist[] typists, Game game)
     {
         raceNumber++;
 
-        for (int i = 0; i < typists.length; i++)
+        for (Typist typist : typists)
         {
-            if (typists[i] != null)
+            if (typist != null)
             {
-                double wpm = race.calculateWPM(typists[i]);
-
                 RaceRecord record = new RaceRecord(
+                        typist.getName(),
                         raceNumber,
-                        typists[i].getFinishPosition(),
-                        wpm,
-                        typists[i].getAccuracyPercentage(),
-                        typists[i].getBurnoutCount()
+                        typist.getFinishPosition(),
+                        game.calculateWPM(typist),
+                        typist.getAccuracyPercentage(),
+                        typist.getBurnoutCount(),
+                        typist.getAccuracyChange()
                 );
 
-                raceHistory.get(i).add(record);
-
-                if (wpm > personalBestWpm[i])
-                {
-                    personalBestWpm[i] = wpm;
-                }
+                saveRecordToFile(record);
+                addRecordToRawData(record);
             }
         }
     }
 
-    /**
-     * Gets a typist's personal best WPM.
-     *
-     * @param typistIndex the typist index
-     * @return the personal best WPM
-     */
-    public double getPersonalBestWpm(int typistIndex)
+    private void saveRecordToFile(RaceRecord record)
     {
-        if (typistIndex >= 0 && typistIndex < personalBestWpm.length)
+        try (FileWriter writer = new FileWriter(FILE_PATH, true))
         {
-            return personalBestWpm[typistIndex];
+            writer.write(record.toFileLine() + System.lineSeparator());
         }
-
-        return 0;
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * Gets the full race history for one typist.
-     *
-     * @param typistIndex the typist index
-     * @return the race history
-     */
-    public ArrayList<RaceRecord> getRaceHistory(int typistIndex)
+    public ArrayList<RaceRecord> getRaceHistory(String typistName)
     {
-        if (typistIndex >= 0 && typistIndex < raceHistory.size())
+        if (!typistData.containsKey(typistName))
         {
-            return raceHistory.get(typistIndex);
+            return new ArrayList<>();
         }
 
-        return new ArrayList<>();
+        return typistData.get(typistName).getRaceHistory();
     }
 
-    public int getRaceNumber()
+    public double getPersonalBestWpm(String typistName)
     {
-        return raceNumber;
-    }
-
-    /**
-     * Resets only the current race graph data.
-     * Long-term history and personal bests are kept.
-     */
-    public void reset()
-    {
-        for (int i = 0; i < wpmHistory.size(); i++)
+        if (!typistData.containsKey(typistName))
         {
-            wpmHistory.get(i).clear();
+            return 0;
         }
+
+        return typistData.get(typistName).getPersonalBestWpm();
+    }
+
+    public RawData getRawData(String typistName)
+    {
+        return typistData.get(typistName);
     }
 }

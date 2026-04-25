@@ -177,6 +177,8 @@ public class FrameManager
 
                 if (race.isFinished())
                 {
+                    statsButton.setVisible(true);
+
                     if (race.getWinner() != null)
                     {
                         statusLabel.setText("Winner: " + race.getWinner().getName());
@@ -229,19 +231,6 @@ public class FrameManager
 
         return buttonFooter;
     }
-
-//    /**
-//     * Starts the race with the configured passage.
-//     *
-//     * @param passageText the selected passage text
-//     */
-//    public void startConfiguredRace(String passageText, int playerNumber, GameConfig config)
-//    {
-//        race.StartRace(passageText, playerNumber, config);
-//        racePanel.repaintRace();
-//        statusLabel.setText("Ready.");
-//        cardLayout.show(mainPanel, "RACE");
-//    }
 
     /**
      * Shows the GUI window.
@@ -299,7 +288,6 @@ public class FrameManager
      */
     public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs)
     {
-
         this.typistConfigs = typistConfigs;
         // race.resetRace(typistConfigs); -> called in start race
         statsButton.setVisible(false);

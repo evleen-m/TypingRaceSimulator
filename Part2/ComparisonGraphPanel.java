@@ -7,6 +7,7 @@ import java.util.ArrayList;
  */
 public class ComparisonGraphPanel extends JPanel
 {
+    //
     private Game race;
     private String metric;
 
@@ -21,6 +22,7 @@ public class ComparisonGraphPanel extends JPanel
     public void setMetric(String metric)
     {
         this.metric = metric;
+        repaint();
     }
 
     /**
@@ -64,12 +66,15 @@ public class ComparisonGraphPanel extends JPanel
         // find the largest value so the graph can scale correctly
         for (int i = 0; i < typists.length; i++)
         {
-            ArrayList<RaceRecord> history = stats.getRaceHistory(i);
-            maxRaces = Math.max(maxRaces, history.size());
-
-            for (int j = 0; j < history.size(); j++)
+            if (typists[i] != null)
             {
-                maxValue = Math.max(maxValue, getMetricValue(history.get(j)));
+                ArrayList<RaceRecord> history = stats.getRaceHistory(typists[i].getName());
+                maxRaces = Math.max(maxRaces, history.size());
+
+                for (int j = 0; j < history.size(); j++)
+                {
+                    maxValue = Math.max(maxValue, getMetricValue(history.get(j), stats));
+                }
             }
         }
 
@@ -100,7 +105,7 @@ public class ComparisonGraphPanel extends JPanel
         {
             if (typists[i] != null)
             {
-                ArrayList<RaceRecord> history = stats.getRaceHistory(i);
+                ArrayList<RaceRecord> history = stats.getRaceHistory(typists[i].getName());
 
                 if (history.size() < 1)
                 {
@@ -120,8 +125,8 @@ public class ComparisonGraphPanel extends JPanel
 
                 for (int j = 1; j < history.size(); j++)
                 {
-                    double value1 = getMetricValue(history.get(j - 1));
-                    double value2 = getMetricValue(history.get(j));
+                    double value1 = getMetricValue(history.get(j - 1), stats);
+                    double value2 = getMetricValue(history.get(j), stats);
 
                     int x1 = leftPadding + (int) (((double) (j - 1) / Math.max(1, maxRaces - 1)) * graphWidth);
                     int y1 = topPadding + graphHeight - (int) ((value1 / maxValue) * graphHeight);
@@ -135,7 +140,7 @@ public class ComparisonGraphPanel extends JPanel
                 // draw points for each completed race
                 for (int j = 0; j < history.size(); j++)
                 {
-                    double value = getMetricValue(history.get(j));
+                    double value = getMetricValue(history.get(j), stats);
 
                     int x = leftPadding + (int) (((double) j / Math.max(1, maxRaces - 1)) * graphWidth);
                     int y = topPadding + graphHeight - (int) ((value / maxValue) * graphHeight);
@@ -145,7 +150,7 @@ public class ComparisonGraphPanel extends JPanel
 
                 // label the final point with the typist symbol
                 RaceRecord lastRecord = history.get(history.size() - 1);
-                double lastValue = getMetricValue(lastRecord);
+                double lastValue = getMetricValue(lastRecord, stats);
 
                 int endX = leftPadding + (int) (((double) (history.size() - 1) / Math.max(1, maxRaces - 1)) * graphWidth);
                 int endY = topPadding + graphHeight - (int) ((lastValue / maxValue) * graphHeight);
@@ -161,7 +166,7 @@ public class ComparisonGraphPanel extends JPanel
      * @param record the race record
      * @return the chosen metric value
      */
-    private double getMetricValue(RaceRecord record)
+    private double getMetricValue(RaceRecord record, RaceStats stats)
     {
         if (metric.equals("Accuracy"))
         {
@@ -175,6 +180,14 @@ public class ComparisonGraphPanel extends JPanel
         {
             return record.getFinishPosition();
         }
+//        else if (metric.equals("Accuracy Change"))
+//        {
+//            return record.getAccuracyChange();
+//        }
+//        else if (metric.equals("Personal Best WPM"))
+//        {
+//            return stats.getPersonalBestWpm(record.getTypistName());
+//        }
 
         return record.getWpm();
     }

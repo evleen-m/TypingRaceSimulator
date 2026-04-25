@@ -8,6 +8,7 @@ import java.util.ArrayList;
  */
 public class StatsPanel
 {
+    //
     private FrameManager parentFrame;
     private Game race;
     private JPanel mainPanel;
@@ -77,11 +78,12 @@ public class StatsPanel
     {
         JPanel listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-        listPanel.setPreferredSize(new Dimension(280, 400));
+        listPanel.setPreferredSize(new Dimension(330, 400));
 
         listPanel.setBorder(BorderFactory.createTitledBorder("Current Race Stats"));
 
         Typist[] typists = race.getSeats();
+        RaceStats stats = race.getRaceStats();
 
         if (typists != null)
         {
@@ -95,6 +97,10 @@ public class StatsPanel
                             typists[i].getName() + ": " + String.format("%.1f", wpm) + " WPM"
                     );
 
+                    JLabel positionLabel = new JLabel(
+                            "Finish Position: " + typists[i].getFinishPosition()
+                    );
+
                     JLabel accuracyLabel = new JLabel(
                             "Accuracy: " + String.format("%.1f", typists[i].getAccuracyPercentage()) + "%"
                     );
@@ -103,26 +109,49 @@ public class StatsPanel
                             "Burnouts: " + typists[i].getBurnoutCount()
                     );
 
+                    JLabel burnoutTurnsLabel = new JLabel(
+                            "Burnout Turns: " + typists[i].getBurnoutTurns()
+                    );
+
                     JLabel accuracyChangeLabel = new JLabel(
                             "Accuracy Change: " + String.format("%+.2f", typists[i].getAccuracyChange())
                     );
+
+                    JLabel personalBestLabel = new JLabel("Personal Best WPM: N/A");
+
+                    if (stats != null)
+                    {
+                        personalBestLabel.setText(
+                                "Personal Best WPM: " +
+                                        String.format("%.1f", stats.getPersonalBestWpm(typists[i].getName()))
+                        );
+                    }
 
                     nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 14f));
                     nameLabel.setForeground(typists[i].getColor());
                     nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+                    positionLabel.setFont(positionLabel.getFont().deriveFont(13f));
                     accuracyLabel.setFont(accuracyLabel.getFont().deriveFont(13f));
                     burnoutLabel.setFont(burnoutLabel.getFont().deriveFont(13f));
+                    burnoutTurnsLabel.setFont(burnoutTurnsLabel.getFont().deriveFont(13f));
                     accuracyChangeLabel.setFont(accuracyChangeLabel.getFont().deriveFont(13f));
+                    personalBestLabel.setFont(personalBestLabel.getFont().deriveFont(13f));
 
+                    positionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
                     accuracyLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
                     burnoutLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    burnoutTurnsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
                     accuracyChangeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    personalBestLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
                     listPanel.add(nameLabel);
+                    listPanel.add(positionLabel);
                     listPanel.add(accuracyLabel);
                     listPanel.add(burnoutLabel);
+                    listPanel.add(burnoutTurnsLabel);
                     listPanel.add(accuracyChangeLabel);
+                    listPanel.add(personalBestLabel);
                     listPanel.add(Box.createVerticalStrut(15));
                 }
             }
@@ -162,9 +191,10 @@ public class StatsPanel
                     area.setFont(new Font("Monospaced", Font.PLAIN, 13));
 
                     String text = typists[i].getName() + "\n";
-                    text += "Personal Best WPM: " + String.format("%.1f", stats.getPersonalBestWpm(i)) + "\n\n";
+                    text += "Personal Best WPM: " +
+                            String.format("%.1f", stats.getPersonalBestWpm(typists[i].getName())) + "\n\n";
 
-                    ArrayList<RaceRecord> history = stats.getRaceHistory(i);
+                    ArrayList<RaceRecord> history = stats.getRaceHistory(typists[i].getName());
 
                     if (history.isEmpty())
                     {
@@ -180,6 +210,7 @@ public class StatsPanel
                                 + " | WPM: " + String.format("%.1f", record.getWpm())
                                 + " | Accuracy: " + String.format("%.1f", record.getAccuracyPercentage()) + "%"
                                 + " | Burnouts: " + record.getBurnoutCount()
+                                + " | Accuracy Change: " + String.format("%+.2f", record.getAccuracyChange())
                                 + "\n";
                     }
 
@@ -214,7 +245,9 @@ public class StatsPanel
                 "WPM",
                 "Accuracy",
                 "Burnouts",
-                "Finish Position"
+                "Finish Position",
+                "Accuracy Change",
+                "Personal Best WPM"
         });
 
         controls.add(new JLabel("Compare by:"));

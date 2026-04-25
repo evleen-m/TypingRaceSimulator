@@ -49,7 +49,6 @@ public class Game {
 
     private boolean raceSavedToHistory = false;
 
-
     // empty game object
     public Game() {
     }
@@ -66,7 +65,7 @@ public class Game {
 
         if (raceStats == null)
         {
-            raceStats = new RaceStats(numberOfSeats);
+            raceStats = new RaceStats();
         }
 
         autocorrectOn = config.autocorrectOn;
@@ -107,6 +106,7 @@ public class Game {
                 typist.setAccuracy(typist.getAccuracy() - 0.07);
             }
 
+            typist.setStartingAccuracy(typist.getAccuracy());
             typist.setConfig(typistConfigs[i]);
             typist.setColor(typistConfigs[i].getColour());
 
@@ -148,12 +148,15 @@ public class Game {
             raceStats.reset();
         }
 
-        for (int i = 0; i < numberOfSeats; i++) {
-            if (seats[i] != null) {
-                seats[i].resetToStart();
+        if (seats != null)
+        {
+            for (int i = 0; i < numberOfSeats; i++) {
+                if (seats[i] != null) {
+                    seats[i].resetToStart();
 
-                if (typistConfigs != null && i < typistConfigs.length) {
-                    seats[i].setColor(typistConfigs[i].getColour());
+                    if (typistConfigs != null && i < typistConfigs.length) {
+                        seats[i].setColor(typistConfigs[i].getColour());
+                    }
                 }
             }
         }
@@ -164,6 +167,7 @@ public class Game {
         }
 
     }
+
     /**
      * Advances the whole race by one turn.
      */
@@ -205,7 +209,7 @@ public class Game {
         {
             for (int i = 0; i < numberOfSeats; i++) {
                 if (seats[i] != null) {
-                    raceStats.recordWPM(i, calculateWPM(seats[i]));
+                    raceStats.recordWPM(seats[i].getName(), calculateWPM(seats[i]));
                 }
             }
         }
@@ -220,7 +224,6 @@ public class Game {
         }
 
     }
-
 
     private boolean checkAllFinished() {
         for (int i = 0; i < numberOfSeats; i++) {
@@ -319,7 +322,7 @@ public class Game {
             }
             duration = Math.max(1, duration);
             theTypist.burnOut(duration);
-            theTypist.recordBurnout();
+            theTypist.recordBurnout(turnCount);
         }
     }
 
@@ -354,7 +357,6 @@ public class Game {
     private boolean raceFinishedBy(Typist theTypist) {
         return (theTypist.getProgress() >= passageLength);
     }
-
 
     /**
      * Calculates the current WPM for a typist.
@@ -426,9 +428,6 @@ public class Game {
     {
         return raceStats;
     }
-
-
-
 
     public String getModifiers()
     {
