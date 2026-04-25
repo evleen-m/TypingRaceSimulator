@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.lang.Math;
 import java.util.Random;
@@ -48,6 +47,8 @@ public class Game {
             new Names("RAPID_KEYS")
     };
 
+    private boolean raceSavedToHistory = false;
+
 
     // empty game object
     public Game() {
@@ -63,8 +64,10 @@ public class Game {
         seats = new Typist[numberOfSeats];
         Arrays.fill(seats, null);
 
-        raceStats = new RaceStats(numberOfSeats);
-
+        if (raceStats == null)
+        {
+            raceStats = new RaceStats(numberOfSeats);
+        }
 
         autocorrectOn = config.autocorrectOn;
         coffeeModeOn = config.coffeeModeOn;
@@ -138,6 +141,7 @@ public class Game {
         nightShiftOn = false;
         coffeeModeOn = false;
         slideBackAmount = 2;
+        raceSavedToHistory = false;
 
         if (raceStats != null)
         {
@@ -208,7 +212,16 @@ public class Game {
 
         // end the whole race only when everyone is finished
         finished = checkAllFinished();
+
+        if (finished && !raceSavedToHistory && raceStats != null)
+        {
+            raceStats.saveCompletedRace(seats, this);
+            raceSavedToHistory = true;
+        }
+
     }
+
+
     private boolean checkAllFinished() {
         for (int i = 0; i < numberOfSeats; i++) {
             if (seats[i] != null && !seats[i].isFinished()) {
@@ -252,6 +265,7 @@ public class Game {
         if (Math.random() < mistypeChance) {
             theTypist.slideBack(slideBackAmount);
             theTypist.setJustMistyped(true);
+            theTypist.recordMistype();
         }
 
         else if (Math.random() < accuracy)
@@ -263,12 +277,21 @@ public class Game {
                 speedMultiplier = config.getSpeedMultiplier();
             }
 
-            typeWithSpeed(theTypist, speedMultiplier);
+            int typed = typeWithSpeed(theTypist, speedMultiplier);
+            for (int i = 0; i < typed; i++)
+            {
+                theTypist.recordCorrectKeystroke();
+            }
 
             // Caffeine Mode: speed boost for the first 10 turns
             if (coffeeModeOn && turnCount <= 10) {
                 if (Math.random() < 0.7) {
-                    typeWithSpeed(theTypist, speedMultiplier);
+                    int typed2 = typeWithSpeed(theTypist, speedMultiplier);
+
+                    for (int i = 0; i < typed2; i++)
+                    {
+                        theTypist.recordCorrectKeystroke();
+                    }
                 }
             }
 
@@ -296,23 +319,30 @@ public class Game {
             }
             duration = Math.max(1, duration);
             theTypist.burnOut(duration);
+            theTypist.recordBurnout();
         }
     }
 
-    private void typeWithSpeed(Typist theTypist, double speedMultiplier)
+    private int typeWithSpeed(Typist theTypist, double speedMultiplier)
     {
+        int charactersTyped = 0;
+
         int guaranteedCharacters = (int) speedMultiplier;
         double extraCharacterChance = speedMultiplier - guaranteedCharacters;
 
         for (int i = 0; i < guaranteedCharacters; i++)
         {
             theTypist.typeCharacter();
+            charactersTyped++;
         }
 
         if (Math.random() < extraCharacterChance)
         {
             theTypist.typeCharacter();
+            charactersTyped++;
         }
+
+        return charactersTyped;
     }
 
     /**

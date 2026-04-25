@@ -26,10 +26,10 @@ public class Typist
 
 
 
-    // stats vars
-//    private int correctKeystrokes = 0;
-//    private int mistypes = 0;
-//    private int burnoutCount = 0;
+    // stats vars// stats vars
+    private int correctKeystrokes = 0;
+    private int mistypes = 0;
+    private int burnoutCount = 0;
     private double startingAccuracy;
     private int finishTurn = 0;
     private int finishPosition = 0;
@@ -151,12 +151,12 @@ public class Typist
         finished = false;
 
         //reset start vars
-//        correctKeystrokes = 0;
-//        mistypes = 0;
-//        burnoutCount = 0;
+        correctKeystrokes = 0;
+        mistypes = 0;
+        burnoutCount = 0;
         finishTurn = 0;
         finishPosition = 0;
-//        startingAccuracy = accuracyRating;
+        startingAccuracy = accuracyRating;
 
     }
 
@@ -253,4 +253,49 @@ public class Typist
     {
         this.finishPosition = finishPosition;
     }
+
+
+
+    public void recordCorrectKeystroke()
+    {
+        correctKeystrokes++;
+    }
+
+    public void recordMistype()
+    {
+        mistypes++;
+    }
+
+    public void recordBurnout()
+    {
+        burnoutCount++;
+    }
+
+    public double getAccuracyPercentage()
+    {
+        int total = correctKeystrokes + mistypes;
+
+        if (total == 0)
+        {
+            return 0;
+        }
+
+        return ((double) correctKeystrokes / total) * 100;
+    }
+
+    public int getBurnoutCount()
+    {
+        return burnoutCount;
+    }
+
+    public void setStartingAccuracy(double startingAccuracy)
+    {
+        this.startingAccuracy = startingAccuracy;
+    }
+
+    public double getAccuracyChange()
+    {
+        return getAccuracy() - startingAccuracy;
+    }
+
 }

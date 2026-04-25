@@ -20,6 +20,7 @@ public class FrameManager
     private TypistConfigPanel typistConfigPanel;
     private StatsPanel statsPanel;
     private TypistConfig[] typistConfigs;
+    private JButton statsButton;
 
     public FrameManager(Game game)
     {
@@ -66,6 +67,7 @@ public class FrameManager
             if (race.isFinished())
             {
                 stopNextTick = true;
+                statsButton.setVisible(true);
 
                 if (race.getWinner() != null)
                 {
@@ -147,7 +149,8 @@ public class FrameManager
         JButton stepButton = new JButton("Step");
         JButton resetButton = new JButton("Reset");
         JButton setupButton = new JButton("Back to Setup");
-        JButton statsButton = new JButton("Stats");
+        statsButton = new JButton("Stats");
+        statsButton.setVisible(false);
 
         // action if start clicked
         startButton.addActionListener(e -> {
@@ -194,6 +197,7 @@ public class FrameManager
         resetButton.addActionListener(e -> {
             timer.stop();
             stopNextTick = false;
+            statsButton.setVisible(false);
             race.resetRace(typistConfigs);
             racePanel.repaintRace();
             statusLabel.setText("Race reset.");
@@ -295,8 +299,10 @@ public class FrameManager
      */
     public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs)
     {
-        //race.resetRace(typistConfigs);
+
         this.typistConfigs = typistConfigs;
+        // race.resetRace(typistConfigs); -> called in start race
+        statsButton.setVisible(false);
         stopNextTick = false;
         race.StartRace(config, typistConfigs);
         racePanel.repaintRace();

@@ -203,14 +203,14 @@ public class RacePanel
                 typist.setColor(Color.GREEN);
                 topPanel.add(won);
             }
-            else{
-                JLabel lost = new JLabel("YOU LOST");
-                lost.setFont(new Font("SansSerif", Font.BOLD, 15));
-                lost.setForeground(new Color(250, 0, 0));
-                lost.setBounds(540, 10, 300, 20);
-                typist.setColor(Color.RED);
-                topPanel.add(lost);
-            }
+//            else{
+//                JLabel lost = new JLabel("YOU LOST");
+//                lost.setFont(new Font("SansSerif", Font.BOLD, 15));
+//                lost.setForeground(new Color(250, 0, 0));
+//                lost.setBounds(540, 10, 300, 20);
+//                //typist.setColor(Color.RED);
+//                topPanel.add(lost);
+//            }
         }
 
         JTextPane passagePane = new JTextPane();
