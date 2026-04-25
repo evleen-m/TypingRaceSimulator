@@ -4,7 +4,7 @@ import javax.swing.SwingUtilities;
  * advancing character by character — or sliding backwards when they mistype.
  *
  * @author Evleen Manghera
- * @version 1
+ * @version 2
  */
 public class Main
 {

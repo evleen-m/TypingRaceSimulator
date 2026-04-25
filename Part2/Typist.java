@@ -24,18 +24,15 @@ public class Typist
 
     private TypistConfig config;
 
-    private final ArrayList<String> names = new ArrayList<>(Arrays.asList(
-            "TURBO-FINGERS",
-            "QWERTY_QUEEN",
-            "HUNT_N_PECK",
-            "KEY-SMASHER",
-            "SPEED_TYPER",
-            "CTRL_MASTER",
-            "SHIFT_WARRIOR",
-            "BYTE_BLAZER",
-            "CODE_TYPHOON",
-            "RAPID_KEYS"
-    ));
+
+
+    // stats vars
+//    private int correctKeystrokes = 0;
+//    private int mistypes = 0;
+//    private int burnoutCount = 0;
+    private double startingAccuracy;
+    private int finishTurn = 0;
+    private int finishPosition = 0;
 
 
     /**
@@ -43,9 +40,9 @@ public class Typist
      *
      * @param typistSymbol a single Unicode character representing this typist
      */
-    public Typist(char typistSymbol)
+    public Typist(String name,char typistSymbol)
     {
-        typistName = pickTypistName();
+        typistName = name;
         this.typistSymbol = typistSymbol;
         progress = 0;
         burntOut = false;
@@ -53,6 +50,7 @@ public class Typist
         accuracyRating = randTypistAccuracy();
         INITAL_ACCURACY = accuracyRating;
         justMistyped = false;
+        startingAccuracy = accuracyRating;
     }
 
     private double randTypistAccuracy() {
@@ -150,6 +148,16 @@ public class Typist
         burntOut = false;
         burntOutTurnsRemaining = 0;
         justMistyped = false;
+        finished = false;
+
+        //reset start vars
+//        correctKeystrokes = 0;
+//        mistypes = 0;
+//        burnoutCount = 0;
+        finishTurn = 0;
+        finishPosition = 0;
+//        startingAccuracy = accuracyRating;
+
     }
 
     public boolean isBurntOut()
@@ -215,19 +223,6 @@ public class Typist
         return color;
     }
 
-    private String pickTypistName() {
-        Random rand = new Random();
-        if (names.isEmpty()) {
-            return "NO_NAMES_LEFT";
-        }
-        int index = rand.nextInt(names.size());
-        return names.remove(index); // removes so it can't repeat
-    }
-
-
-
-
-
     public TypistConfig getConfig() {
         return config;
     }
@@ -236,4 +231,26 @@ public class Typist
         this.config = config;
     }
 
+
+
+
+    public int getFinishTurn()
+    {
+        return finishTurn;
+    }
+
+    public void setFinishTurn(int finishTurn)
+    {
+        this.finishTurn = finishTurn;
+    }
+
+    public int getFinishPosition()
+    {
+        return finishPosition;
+    }
+
+    public void setFinishPosition(int finishPosition)
+    {
+        this.finishPosition = finishPosition;
+    }
 }

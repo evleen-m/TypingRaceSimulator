@@ -24,17 +24,29 @@ public class Game {
     private double burnoutRisk = 0.05;
 
     private int turnCount = 0;
+    private int finishPositionCounter = 0;
     private boolean finished = false;
     private Typist winner = null;
+
+    private RaceStats raceStats;
 
     // difficulty modifiers
     private boolean autocorrectOn = false;
     private boolean nightShiftOn = false;
     private boolean coffeeModeOn = false;
 
-
-
-
+    private final Names[] name = {
+            new Names("TURBO-FINGERS"),
+            new Names("QWERTY_QUEEN"),
+            new Names("HUNT_N_PECK"),
+            new Names("KEY-SMASHER"),
+            new Names("SPEED_TYPER"),
+            new Names("CTRL_MASTER"),
+            new Names("SHIFT_WARRIOR"),
+            new Names("BYTE_BLAZER"),
+            new Names("CODE_TYPHOON"),
+            new Names("RAPID_KEYS")
+    };
 
 
     // empty game object
@@ -51,6 +63,8 @@ public class Game {
         seats = new Typist[numberOfSeats];
         Arrays.fill(seats, null);
 
+        raceStats = new RaceStats(numberOfSeats);
+
 
         autocorrectOn = config.autocorrectOn;
         coffeeModeOn = config.coffeeModeOn;
@@ -64,6 +78,18 @@ public class Game {
         createTypists(typistConfigs);
     }
 
+    private String pickTypistName() {
+        Random rand = new Random();
+        int index = rand.nextInt(name.length);
+
+        while (name[index].isUsed() ){
+            index = rand.nextInt(name.length);
+        }
+
+        name[index].setUsed(true);
+        return name[index].getName();
+    }
+
     private void createTypists(TypistConfig[] typistConfigs)
     {
         for (int i = 0; i < numberOfSeats; i++)
@@ -71,7 +97,7 @@ public class Game {
             String chosenSymbol = typistConfigs[i].getSymbol();
             char symbol = chosenSymbol.charAt(0);
 
-            Typist typist = new Typist(symbol);
+            Typist typist = new Typist(pickTypistName(), symbol);
 
             if (nightShiftOn)
             {
@@ -92,7 +118,7 @@ public class Game {
      * @param seatNumber the seat in which to place them
      */
     public void addTypist(Typist theTypist, int seatNumber) {
-        if (seatNumber > numberOfSeats) {
+        if (seatNumber >= numberOfSeats) {
             System.out.println("Cannot seat typist at seat " + seatNumber + " — there is no such seat.");
             return;
         }
@@ -105,11 +131,18 @@ public class Game {
      */
     public void resetRace(TypistConfig[] typistConfigs) {
         turnCount = 0;
+        finishPositionCounter = 0;
         finished = false;
         winner = null;
         autocorrectOn = false;
         nightShiftOn = false;
         coffeeModeOn = false;
+        slideBackAmount = 2;
+
+        if (raceStats != null)
+        {
+            raceStats.reset();
+        }
 
         for (int i = 0; i < numberOfSeats; i++) {
             if (seats[i] != null) {
@@ -119,6 +152,11 @@ public class Game {
                     seats[i].setColor(typistConfigs[i].getColour());
                 }
             }
+        }
+
+        //reset names
+        for (Names names : name) {
+            names.setUsed(false);
         }
 
     }
@@ -145,12 +183,26 @@ public class Game {
         for (int i = 0; i < numberOfSeats; i++) {
             if (seats[i] != null && !seats[i].isFinished() && raceFinishedBy(seats[i])) {
 
+                finishPositionCounter++;
+
                 if (winner == null) {
                     winner = seats[i];
                     winner.setAccuracy(winner.getAccuracy() + 0.02);
                 }
 
                 seats[i].setFinished(true);
+                seats[i].setFinishTurn(turnCount);
+                seats[i].setFinishPosition(finishPositionCounter);
+            }
+        }
+
+        // record WPM history for graphing
+        if (raceStats != null)
+        {
+            for (int i = 0; i < numberOfSeats; i++) {
+                if (seats[i] != null) {
+                    raceStats.recordWPM(i, calculateWPM(seats[i]));
+                }
             }
         }
 
@@ -281,11 +333,17 @@ public class Game {
      * @return the WPM estimate
      */
     public double calculateWPM(Typist t) {
-        if (turnCount == 0) {
+        int typistTurnCount = turnCount;
+
+        if (t.isFinished()) {
+            typistTurnCount = t.getFinishTurn();
+        }
+
+        if (typistTurnCount == 0) {
             return 0;
         }
 
-        double minutes = (turnCount * 0.2) / 60.0;
+        double minutes = (typistTurnCount * 0.2) / 60.0;
         double words = t.getProgress() / 5.0;
 
         return words / minutes;
@@ -332,6 +390,11 @@ public class Game {
 
     public Typist getWinner() {
         return winner;
+    }
+
+    public RaceStats getRaceStats()
+    {
+        return raceStats;
     }
 
 

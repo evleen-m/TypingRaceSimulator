@@ -18,6 +18,7 @@ public class FrameManager
     private boolean stopNextTick = false;
 
     private TypistConfigPanel typistConfigPanel;
+    private StatsPanel statsPanel;
     private TypistConfig[] typistConfigs;
 
     public FrameManager(Game game)
@@ -65,7 +66,15 @@ public class FrameManager
             if (race.isFinished())
             {
                 stopNextTick = true;
-                statusLabel.setText("Winner: " + race.getWinner().getName());
+
+                if (race.getWinner() != null)
+                {
+                    statusLabel.setText("Winner: " + race.getWinner().getName());
+                }
+                else
+                {
+                    statusLabel.setText("Race finished.");
+                }
             }
             else
             {
@@ -138,11 +147,13 @@ public class FrameManager
         JButton stepButton = new JButton("Step");
         JButton resetButton = new JButton("Reset");
         JButton setupButton = new JButton("Back to Setup");
+        JButton statsButton = new JButton("Stats");
 
         // action if start clicked
         startButton.addActionListener(e -> {
             if (!race.isFinished())
             {
+                stopNextTick = false;
                 timer.start();
                 statusLabel.setText("Race in progress...");
             }
@@ -163,7 +174,14 @@ public class FrameManager
 
                 if (race.isFinished())
                 {
-                    statusLabel.setText("Winner: " + race.getWinner().getName());
+                    if (race.getWinner() != null)
+                    {
+                        statusLabel.setText("Winner: " + race.getWinner().getName());
+                    }
+                    else
+                    {
+                        statusLabel.setText("Race finished.");
+                    }
                 }
                 else
                 {
@@ -175,6 +193,7 @@ public class FrameManager
         // action if reset is clicked
         resetButton.addActionListener(e -> {
             timer.stop();
+            stopNextTick = false;
             race.resetRace(typistConfigs);
             racePanel.repaintRace();
             statusLabel.setText("Race reset.");
@@ -186,12 +205,18 @@ public class FrameManager
             cardLayout.show(mainPanel, "MENU");
         });
 
+        //action if stats is clicked
+        statsButton.addActionListener(e -> {
+            showStats();
+        });
+
         // add buttons to the button specific panel
         buttons.add(startButton);
         buttons.add(pauseButton);
         buttons.add(stepButton);
         buttons.add(resetButton);
         buttons.add(setupButton);
+        buttons.add(statsButton);
 
         statusLabel = new JLabel("Ready.");
 
@@ -244,13 +269,35 @@ public class FrameManager
     }
 
     /**
+     * Shows the race screen.
+     */
+    public void showRace()
+    {
+        cardLayout.show(mainPanel, "RACE");
+    }
+
+    /**
+     * Shows the stats screen.
+     */
+    public void showStats()
+    {
+        statsPanel = new StatsPanel(this, race);
+        statsPanel.buildPanel();
+
+        mainPanel.add(statsPanel.getPanel(), "STATS");
+        cardLayout.show(mainPanel, "STATS");
+    }
+
+    /**
      * Starts the race with the configured passage and typists.
      *
      * @param config the selected game config
      */
     public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs)
     {
+        //race.resetRace(typistConfigs);
         this.typistConfigs = typistConfigs;
+        stopNextTick = false;
         race.StartRace(config, typistConfigs);
         racePanel.repaintRace();
         statusLabel.setText("Ready.");
