@@ -469,6 +469,12 @@ public class TypingRace {
 
 
 
+    /**
+     * changes starting accuracy based on previous race performance
+     * higher ranked typists get a small accuracy penalty
+     *
+     * @param typist the typist being adjusted
+     */
     private void applyRankImpact(Typist typist)
     {
         if (raceStats == null)
@@ -486,6 +492,10 @@ public class TypingRace {
         else if (points >= 15)
         {
             typist.setAccuracy(typist.getAccuracy() - 0.02);
+        }
+        else if (points <= 5 && points > 0)
+        {
+            typist.setAccuracy(typist.getAccuracy() + 0.02);
         }
     }
 }
