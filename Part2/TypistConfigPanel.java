@@ -2,11 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Builds and manages the typist configuration screen.
- * Uses composition instead of extending JPanel.
+ * Builds and manages the typist configuration screen
  */
-public class TypistConfigPanel
-{
+public class TypistConfigPanel {
     private FrameManager parentFrame;
     private JPanel mainPanel;
 
@@ -23,18 +21,17 @@ public class TypistConfigPanel
 
     private GameConfig config;
 
-    public TypistConfigPanel(FrameManager parentFrame)
-    {
+    public TypistConfigPanel(FrameManager parentFrame) {
         this.parentFrame = parentFrame;
     }
 
     /**
-     * Builds the typist configuration panel.
+     * builds the typist configuration screen
+     * stores the selected config so the options can be used later
      *
      * @param config the selected game config
      */
-    public void buildPanel(GameConfig config)
-    {
+    public void buildPanel(GameConfig config) {
         this.config = config;
 
         // main container panel
@@ -66,8 +63,7 @@ public class TypistConfigPanel
         selectedColours = new Color[config.playerNumber];
 
         // build each typist row
-        for (int i = 0; i < config.playerNumber; i++)
-        {
+        for (int i = 0; i < config.playerNumber; i++) {
             configSection.add(buildTypistRow(i));
             configSection.add(Box.createVerticalStrut(10)); // spacing betwen rows
         }
@@ -96,10 +92,15 @@ public class TypistConfigPanel
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    // builds one typist row with all config options
-    private JPanel buildTypistRow(int index)
-    {
-        // main row panel using gridbag for layout control
+    /**
+     * builds a single typist row with all configuration options
+     * includes dropdowns, checkboxes and colour selection for each typist
+     *
+     * @param index the typist number
+     * @return panel containing one typist setup row
+     */
+    private JPanel buildTypistRow(int index) {
+        // main row panel using gridbag for layout
         JPanel row = new JPanel(new GridBagLayout());
 
         // add border and spacing around the row
@@ -114,7 +115,7 @@ public class TypistConfigPanel
         c.insets = new Insets(5, 8, 5, 8); // spacing betwen components
         c.anchor = GridBagConstraints.WEST; // align everything to left
 
-        // typist title label (e.g. typist 1)
+        // typist title label
         JLabel typistTitle = new JLabel("Typist " + (index + 1));
         typistTitle.setFont(typistTitle.getFont().deriveFont(Font.BOLD, 16f));
 
@@ -132,7 +133,7 @@ public class TypistConfigPanel
         row.add(new JLabel("Typing Style:"), c);
 
         // dropdown for typing style
-        typingStyleBoxes[index] = new JComboBox<>(new String[] {
+        typingStyleBoxes[index] = new JComboBox<>(new String[]{
                 "Touch Typist",
                 "Hunt & Peck",
                 "Phone Thumbs",
@@ -147,7 +148,7 @@ public class TypistConfigPanel
         row.add(new JLabel("Keyboard:"), c);
 
         // dropdown for keyboard type
-        keyboardTypeBoxes[index] = new JComboBox<>(new String[] {
+        keyboardTypeBoxes[index] = new JComboBox<>(new String[]{
                 "Mechanical",
                 "Membrane",
                 "Touchscreen",
@@ -158,7 +159,7 @@ public class TypistConfigPanel
         row.add(keyboardTypeBoxes[index], c);
 
         // symbol selection dropdown
-        symbolBoxes[index] = new JComboBox<>(new String[] {
+        symbolBoxes[index] = new JComboBox<>(new String[]{
                 "Ⓐ", "Ⓑ", "Ⓒ", "★", "●", "◆", "■", "▲", "⌨", "⚡"
         });
 
@@ -204,22 +205,16 @@ public class TypistConfigPanel
         colourButtons[index].setOpaque(true);
         colourButtons[index].setPreferredSize(new Dimension(150, 30));
 
-        int buttonIndex = index; // needed for lambda capture
 
         // open colour picker popup when clicked
         colourButtons[index].addActionListener(e -> {
-            Color chosenColour = JColorChooser.showDialog(
-                    mainPanel,
-                    "Choose Typist Colour",
-                    selectedColours[buttonIndex]
-            );
+            Color chosenColour = JColorChooser.showDialog(mainPanel, "Choose Typist Colour", selectedColours[index]);
 
             // update colour if user picked one
-            if (chosenColour != null)
-            {
-                selectedColours[buttonIndex] = chosenColour;
-                colourButtons[buttonIndex].setBackground(chosenColour);
-                colourButtons[buttonIndex].setText("Colour Selected");
+            if (chosenColour != null) {
+                selectedColours[index] = chosenColour;
+                colourButtons[index].setBackground(chosenColour);
+                colourButtons[index].setText("Colour Selected");
             }
         });
 
@@ -232,9 +227,7 @@ public class TypistConfigPanel
         row.add(colourButtons[index], c);
 
         // small helper text explaining effects (not dynamic just info)
-        JLabel impactLabel = new JLabel(
-                "Typing Style affects accuracy/burnout.  Keyboard affects mistypes.  Accessories add bonuses."
-        );
+        JLabel impactLabel = new JLabel("Typing Style affects accuracy/burnout.  Keyboard affects mistypes.  Accessories add bonuses.");
 
         impactLabel.setFont(impactLabel.getFont().deriveFont(12f));
         impactLabel.setForeground(new Color(90, 90, 90));
@@ -248,9 +241,13 @@ public class TypistConfigPanel
         return row;
     }
 
-    // builds the info panel on the right side
-    private JPanel buildInfoPanel()
-    {
+    /**
+     * builds the info panel shown on the right side
+     * displays explanations for typing styles, keyboards and accessories
+     *
+     * @return panel containing the info sections
+     */
+    private JPanel buildInfoPanel() {
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setPreferredSize(new Dimension(390, 600));
@@ -312,9 +309,15 @@ public class TypistConfigPanel
         return infoPanel;
     }
 
-    // helper method to build each info section box
-    private JPanel createInfoSection(String title, String text)
-    {
+    /**
+     * builds a single info section box with a title and description
+     * used in the side panel to explain different options
+     *
+     * @param title the section heading
+     * @param text  the description text
+     * @return panel containing the info section
+     */
+    private JPanel createInfoSection(String title, String text) {
         JPanel section = new JPanel(new BorderLayout(5, 5));
         section.setBackground(Color.WHITE);
         section.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -343,24 +346,13 @@ public class TypistConfigPanel
     }
 
     /**
-     * Returns the built typist configuration panel.
-     *
-     * @return the typist configuration panel
+     * starts the race using the selected typist settings
+     * collects all choices from the ui and builds typist configs
      */
-    public JPanel getPanel()
-    {
-        return mainPanel;
-    }
-
-    /**
-     * Starts the race using the configured typists.
-     */
-    private void startRace()
-    {
+    private void startRace() {
         TypistConfig[] typistConfigs = new TypistConfig[config.playerNumber];
 
-        for (int i = 0; i < config.playerNumber; i++)
-        {
+        for (int i = 0; i < config.playerNumber; i++) {
             TypistConfig typistConfig = new TypistConfig();
 
             typistConfig.setTypingStyle((String) typingStyleBoxes[i].getSelectedItem());
@@ -377,5 +369,9 @@ public class TypistConfigPanel
         }
 
         parentFrame.startConfiguredRace(config, typistConfigs);
+    }
+
+    public JPanel getPanel() {
+        return mainPanel;
     }
 }

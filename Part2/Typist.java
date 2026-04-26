@@ -7,22 +7,25 @@ import java.util.ArrayList;
  * @author Evleen Manghera
  * @version 1
  */
-public class Typist
-{
+public class Typist {
+
     private String typistName;
     private char typistSymbol;
     private int progress;
-    private Boolean burntOut;
+    private boolean burntOut;
     private int burntOutTurnsRemaining;
-    private final double INITAL_ACCURACY;
     private double accuracyRating;
     private boolean justMistyped;
     private Color color;
     private boolean finished = false;
 
+    private final double INITAL_ACCURACY;
+
+
+    // configuration
     private TypistConfig config;
 
-    // stats vars// stats vars
+    // stats
     private int correctKeystrokes = 0;
     private int mistypes = 0;
     private int burnoutCount = 0;
@@ -32,14 +35,15 @@ public class Typist
     private ArrayList<Integer> burnoutTurns = new ArrayList<>();
 
     /**
-     * Creates a new typist with a given symbol, name, and accuracy rating.
+     * creates a new typist with a name and symbol
+     * sets starting values like progress and accuracy
      *
-     * @param typistSymbol a single Unicode character representing this typist
+     * @param name   the typist name
+     * @param symbol the character used to represent the typist
      */
-    public Typist(String name,char typistSymbol)
-    {
+    public Typist(String name, char symbol) {
         typistName = name;
-        this.typistSymbol = typistSymbol;
+        typistSymbol = symbol;
         progress = 0;
         burntOut = false;
         burntOutTurnsRemaining = 0;
@@ -49,9 +53,130 @@ public class Typist
         startingAccuracy = accuracyRating;
     }
 
+    // main race actions
+
+    /**
+     * resets the typist back to starting state for a new race
+     * clears progress status and all stats
+     */
+    public void resetToStart() {
+        progress = 0;
+        burntOut = false;
+        burntOutTurnsRemaining = 0;
+        justMistyped = false;
+        finished = false;
+
+        // reset stats vars
+        correctKeystrokes = 0;
+        mistypes = 0;
+        burnoutCount = 0;
+        finishTurn = 0;
+        finishPosition = 0;
+        startingAccuracy = accuracyRating;
+        burnoutTurns.clear();
+    }
+
+    /**
+     * moves the typist forward by one character in the race
+     */
+    public void typeCharacter() {
+        progress += 1;
+    }
+
+    /**
+     * moves the typist backwards by a set amount
+     * makes sure progress does not go below zero
+     *
+     * @param amount how many characters to move back
+     */
+    public void slideBack(int amount) {
+        if (progress >= amount) {
+            progress -= amount;
+        } else {
+            progress = 0;
+        }
+    }
+
+    /**
+     * sets the typist into a burnout state for a number of turns
+     * prevents progress while burnout is active
+     *
+     * @param turns how long the burnout lasts
+     */
+    public void burnOut(int turns) {
+        this.burntOut = true;
+        this.burntOutTurnsRemaining = turns;
+    }
+
+    /**
+     * reduces burnout duration each turn
+     * typist recovers when turns reach zero
+     */
+    public void recoverFromBurnout() {
+        if (burntOut) {
+            burntOutTurnsRemaining--;
+            if (burntOutTurnsRemaining == 0) {
+                burntOut = false;
+            }
+        }
+    }
+
+    // stat methods
+
+    /**
+     * records a burnout event for this typist
+     * increases burnout count and stores the turn it happened
+     *
+     * @param turnNumber the turn when burnout occurred
+     */
+    public void recordBurnout(int turnNumber) {
+        burnoutCount++;
+        burnoutTurns.add(turnNumber);
+    }
+
+    public void recordCorrectKeystroke() {
+        correctKeystrokes++;
+    }
+
+    public void recordMistype() {
+        mistypes++;
+    }
+
+    // calculation methods
+
+    /**
+     * calculates how much accuracy has changed since the start of the race
+     *
+     * @return difference between current and starting accuracy
+     */
+    public double getAccuracyChange() {
+        return getAccuracy() - startingAccuracy;
+    }
+
+    /**
+     * calculates the accuracy percentage based on correct keystrokes and mistakes
+     *
+     * @return accuracy as a percentage
+     */
+    public double getAccuracyPercentage() {
+        int total = correctKeystrokes + mistypes;
+
+        if (total == 0) {
+            return 0;
+        }
+
+        return ((double) correctKeystrokes / total) * 100;
+    }
+
+    /**
+     * generates a random starting accuracy for the typist
+     * creates variation so most are average with some weaker and stronger
+     *
+     * @return random accuracy value
+     */
     private double randTypistAccuracy() {
         double num = Math.random();
-        // create variation -> ensures some weaker and stronger but most are mid-capability
+
         if (num < 0.2) {
             num = 0.50 + Math.random() * 0.08; // weaker
         } else if (num < 0.8) {
@@ -59,8 +184,11 @@ public class Typist
         } else {
             num = 0.75 + Math.random() * 0.10; // stronger
         }
+
         return num;
     }
+
+    // getters/setters
 
     public double getINITAL_ACCURACY() {
         return INITAL_ACCURACY;
@@ -69,153 +197,65 @@ public class Typist
     public boolean isFinished() {
         return finished;
     }
+
     public void setFinished(boolean finished) {
         this.finished = finished;
     }
 
-    public void setJustMistyped(boolean justMistyped)
-    {
+    public void setJustMistyped(boolean justMistyped) {
         this.justMistyped = justMistyped;
     }
 
-    public boolean hasJustMistyped()
-    {
+    public boolean hasJustMistyped() {
         return justMistyped;
     }
 
-    /**
-     * Sets this typist into a burnout state for a given number of turns.
-     *
-     * @param turns the number of turns the burnout will last
-     */
-    public void burnOut(int turns)
-    {
-        this.burntOut = true;
-        this.burntOutTurnsRemaining = turns;
-    }
-
-    /**
-     * Reduces the remaining burnout counter by one turn.
-     * When the counter reaches zero, the typist recovers automatically.
-     */
-    public void recoverFromBurnout()
-    {
-        if (burntOut)
-        {
-            burntOutTurnsRemaining--;
-            if (burntOutTurnsRemaining == 0)
-            {
-                burntOut = false;
-            }
-        }
-    }
-
-    public double getAccuracy()
-    {
+    public double getAccuracy() {
         return accuracyRating;
     }
 
-    public int getProgress()
-    {
+    public int getProgress() {
         return progress;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return typistName;
     }
 
-    public char getSymbol()
-    {
+    public char getSymbol() {
         return typistSymbol;
     }
 
-    public int getBurnoutTurnsRemaining()
-    {
+    public int getBurnoutTurnsRemaining() {
         return burntOutTurnsRemaining;
     }
 
-    /**
-     * Resets the typist to their initial state, ready for a new race.
-     */
-    public void resetToStart()
-    {
-        progress = 0;
-        burntOut = false;
-        burntOutTurnsRemaining = 0;
-        justMistyped = false;
-        finished = false;
 
-        //reset start vars
-        correctKeystrokes = 0;
-        mistypes = 0;
-        burnoutCount = 0;
-        finishTurn = 0;
-        finishPosition = 0;
-        startingAccuracy = accuracyRating;
-        burnoutTurns.clear();
-
-    }
-
-    public boolean isBurntOut()
-    {
+    public boolean isBurntOut() {
         return burntOut;
     }
 
     /**
-     * Advances the typist forward by one character.
-     */
-    public void typeCharacter()
-    {
-        progress += 1;
-    }
-
-    /**
-     * Moves the typist backwards by a given number of characters.
-     * Progress cannot go below zero.
+     * sets the accuracy rating for the typist
+     * keeps the value between 0 and 1
      *
-     * @param amount the number of characters to slide back
+     * @param newAccuracy the new accuracy value
      */
-    public void slideBack(int amount)
-    {
-        if (progress >= amount)
-        {
-            progress -= amount;
-        }
-        else
-        {
-            progress = 0;
-        }
-    }
-
-    /**
-     * Sets the accuracy rating of the typist.
-     *
-     * @param newAccuracy the new accuracy rating
-     */
-    public void setAccuracy(double newAccuracy)
-    {
-        if (newAccuracy < 0.0)
-        {
+    public void setAccuracy(double newAccuracy) {
+        if (newAccuracy < 0.0) {
             accuracyRating = 0.0;
-        }
-        else if (newAccuracy > 1.0)
-        {
+        } else if (newAccuracy > 1.0) {
             accuracyRating = 1.0;
-        }
-        else
-        {
+        } else {
             accuracyRating = newAccuracy;
         }
     }
 
-    public void setColor(Color color)
-    {
+    public void setColor(Color color) {
         this.color = color;
     }
 
-    public Color getColor()
-    {
+    public Color getColor() {
         return color;
     }
 
@@ -227,76 +267,34 @@ public class Typist
         this.config = config;
     }
 
-    public int getFinishTurn()
-    {
+    public int getFinishTurn() {
         return finishTurn;
     }
 
-    public void setFinishTurn(int finishTurn)
-    {
+    public void setFinishTurn(int finishTurn) {
         this.finishTurn = finishTurn;
     }
 
-    public int getFinishPosition()
-    {
+    public int getFinishPosition() {
         return finishPosition;
     }
 
-    public void setFinishPosition(int finishPosition)
-    {
+    public void setFinishPosition(int finishPosition) {
         this.finishPosition = finishPosition;
     }
 
-    public void recordCorrectKeystroke()
-    {
-        correctKeystrokes++;
-    }
 
-    public void recordMistype()
-    {
-        mistypes++;
-    }
-
-    public void recordBurnout()
-    {
-        burnoutCount++;
-    }
-
-    public void recordBurnout(int turnNumber)
-    {
-        burnoutCount++;
-        burnoutTurns.add(turnNumber);
-    }
-
-    public double getAccuracyPercentage()
-    {
-        int total = correctKeystrokes + mistypes;
-
-        if (total == 0)
-        {
-            return 0;
-        }
-
-        return ((double) correctKeystrokes / total) * 100;
-    }
-
-    public int getBurnoutCount()
-    {
+    public int getBurnoutCount() {
         return burnoutCount;
     }
 
-    public ArrayList<Integer> getBurnoutTurns()
-    {
+    public ArrayList<Integer> getBurnoutTurns() {
         return burnoutTurns;
     }
 
-    public void setStartingAccuracy(double startingAccuracy)
-    {
+    public void setStartingAccuracy(double startingAccuracy) {
         this.startingAccuracy = startingAccuracy;
     }
 
-    public double getAccuracyChange()
-    {
-        return getAccuracy() - startingAccuracy;
-    }
+
 }

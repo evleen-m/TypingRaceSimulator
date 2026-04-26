@@ -3,15 +3,15 @@ import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * Draws a comparison graph for historical typist data.
+ * draws a comparison graph for historical typist data
+ * compares selected stats across typists
  */
 public class ComparisonGraphPanel extends JPanel
 {
-    //
-    private Game race;
+    private TypingRace race;
     private String metric;
 
-    public ComparisonGraphPanel(Game race, String metric)
+    public ComparisonGraphPanel(TypingRace race, String metric)
     {
         this.race = race;
         this.metric = metric;
@@ -26,7 +26,8 @@ public class ComparisonGraphPanel extends JPanel
     }
 
     /**
-     * Paints the comparison graph.
+     * paints the comparison graph
+     * draws the selected metric for each typist
      *
      * @param g the graphics object
      */
@@ -107,7 +108,7 @@ public class ComparisonGraphPanel extends JPanel
             {
                 ArrayList<RaceRecord> history = stats.getRaceHistory(typists[i].getName());
 
-                if (history.size() < 1)
+                if (history.isEmpty())
                 {
                     continue;
                 }
@@ -161,34 +162,19 @@ public class ComparisonGraphPanel extends JPanel
     }
 
     /**
-     * Gets the selected metric value from a race record.
+     * gets the selected metric value from a race record.
      *
      * @param record the race record
      * @return the chosen metric value
      */
     private double getMetricValue(RaceRecord record, RaceStats stats)
     {
-        if (metric.equals("Accuracy"))
-        {
-            return record.getAccuracyPercentage();
-        }
-        else if (metric.equals("Burnouts"))
-        {
-            return record.getBurnoutCount();
-        }
-        else if (metric.equals("Finish Position"))
-        {
-            return record.getFinishPosition();
-        }
-//        else if (metric.equals("Accuracy Change"))
-//        {
-//            return record.getAccuracyChange();
-//        }
-//        else if (metric.equals("Personal Best WPM"))
-//        {
-//            return stats.getPersonalBestWpm(record.getTypistName());
-//        }
+        return switch (metric) {
+            case "Accuracy" -> record.getAccuracyPercentage();
+            case "Burnouts" -> record.getBurnoutCount();
+            case "Finish Position" -> record.getFinishPosition();
+            default -> record.getWpm();
+        };
 
-        return record.getWpm();
     }
 }

@@ -2,8 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Builds and manages the setup screen for the race.
- * Uses composition instead of extending JPanel.
+ * builds and manages the setup screen for the race
  */
 public class MenuPanel
 {
@@ -28,6 +27,9 @@ public class MenuPanel
     private JCheckBox coffeeModeOnBox;
     private JCheckBox nightShiftOnBox;
 
+    /**
+     * creates the menu panel and builds the UI
+     */
     public MenuPanel(FrameManager parentFrame)
     {
         this.parentFrame = parentFrame;
@@ -35,7 +37,7 @@ public class MenuPanel
     }
 
     /**
-     * Builds the setup panel.
+     * builds the main layout of the menu screen
      */
     private void buildPanel()
     {
@@ -70,10 +72,12 @@ public class MenuPanel
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * builds the passage selection card
+     */
     private JPanel buildPassageCard()
     {
         JPanel card = createCard();
-
         GridBagConstraints c = createConstraints();
 
         JLabel heading = createHeading("Passage Settings");
@@ -123,10 +127,12 @@ public class MenuPanel
         return card;
     }
 
+    /**
+     * builds the player configuration card
+     */
     private JPanel buildPlayerCard()
     {
         JPanel card = createCard();
-
         GridBagConstraints c = createConstraints();
 
         JLabel heading = createHeading("Race Settings");
@@ -158,10 +164,12 @@ public class MenuPanel
         return card;
     }
 
+    /**
+     * builds the modifier selection card
+     */
     private JPanel buildModifierCard()
     {
         JPanel card = createCard();
-
         GridBagConstraints c = createConstraints();
 
         JLabel heading = createHeading("Global Difficulty Modifiers");
@@ -191,24 +199,20 @@ public class MenuPanel
         c.gridx = 2;
         card.add(nightShiftOnBox, c);
 
-        JLabel autocorrectText = createSmallText("Halves slide-back after mistypes.");
-        JLabel caffeineText = createSmallText("Early speed boost, later burnout risk.");
-        JLabel nightText = createSmallText("Slightly lowers everyone’s accuracy.");
-
         c.gridy = 2;
 
-        c.gridx = 0;
-        card.add(autocorrectText, c);
-
+        card.add(createSmallText("Halves slide-back after mistypes."), c);
         c.gridx = 1;
-        card.add(caffeineText, c);
-
+        card.add(createSmallText("Early speed boost, later burnout risk."), c);
         c.gridx = 2;
-        card.add(nightText, c);
+        card.add(createSmallText("Slightly lowers everyone’s accuracy."), c);
 
         return card;
     }
 
+    /**
+     * creates a reusable card panel with styling
+     */
     private JPanel createCard()
     {
         JPanel card = new JPanel(new GridBagLayout());
@@ -221,6 +225,9 @@ public class MenuPanel
         return card;
     }
 
+    /**
+     * creates standard layout constraints
+     */
     private GridBagConstraints createConstraints()
     {
         GridBagConstraints c = new GridBagConstraints();
@@ -229,6 +236,9 @@ public class MenuPanel
         return c;
     }
 
+    /**
+     * creates a section heading label
+     */
     private JLabel createHeading(String text)
     {
         JLabel label = new JLabel(text);
@@ -236,6 +246,9 @@ public class MenuPanel
         return label;
     }
 
+    /**
+     * creates smaller descriptive text label
+     */
     private JLabel createSmallText(String text)
     {
         JLabel label = new JLabel(text);
@@ -244,6 +257,9 @@ public class MenuPanel
         return label;
     }
 
+    /**
+     * applies consistent styling to checkboxes
+     */
     private void styleCheckbox(JCheckBox checkBox)
     {
         checkBox.setBackground(Color.WHITE);
@@ -251,17 +267,7 @@ public class MenuPanel
     }
 
     /**
-     * Returns the built setup panel.
-     *
-     * @return the setup panel
-     */
-    public JPanel getPanel()
-    {
-        return mainPanel;
-    }
-
-    /**
-     * Creates the race based on the selected passage.
+     * creates the game config and moves to typist setup screen
      */
     private void createRace()
     {
@@ -274,26 +280,24 @@ public class MenuPanel
             throw new RuntimeException("Invalid player number");
         }
 
-        boolean autocorrectOnBoxSelected = autocorrectOnBox.isSelected();
-        boolean coffeeModeOnBoxSelected = coffeeModeOnBox.isSelected();
-        boolean nightShiftOnBoxSelected = nightShiftOnBox.isSelected();
-
         GameConfig config = new GameConfig();
-        config.autocorrectOn = autocorrectOnBoxSelected;
-        config.coffeeModeOn = coffeeModeOnBoxSelected;
-        config.nightShiftOn = nightShiftOnBoxSelected;
+        config.autocorrectOn = autocorrectOnBox.isSelected();
+        config.coffeeModeOn = coffeeModeOnBox.isSelected();
+        config.nightShiftOn = nightShiftOnBox.isSelected();
         config.playerNumber = playerNumber;
         config.passageText = passage;
 
         parentFrame.openTypistConfig(config);
     }
 
+    /**
+     * returns the selected passage string based on user choice
+     */
     private String getPassageString()
     {
         String selected = (String) passageChoiceBox.getSelectedItem();
         String passage = shortPassage;
 
-        // check passage length
         if ("Medium".equals(selected))
         {
             passage = medPassage;
@@ -313,5 +317,10 @@ public class MenuPanel
         }
 
         return passage;
+    }
+
+    public JPanel getPanel()
+    {
+        return mainPanel;
     }
 }

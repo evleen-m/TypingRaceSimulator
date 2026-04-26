@@ -23,19 +23,27 @@ public class TypistConfig {
         headphones = false;
     }
 
-    public double getAccuracyBonus(int passageLength, int progress) {
+    /**
+     * calculates the accuracy bonus (or penalty) based on typing style
+     * and whether energy drink is active during the race
+     *
+     * @param passageLength total length of the passage
+     * @param progress current progress through the passage
+     * @return accuracy bonus value
+     */
+    public double getAccuracyBonus(int passageLength, int progress)
+    {
         double bonus = 0;
 
-        if (typingStyle.equals("Touch Typist")) {
-            bonus += 0.06;
-        } else if (typingStyle.equals("Hunt & Peck")) {
-            bonus -= 0.05;
-        } else if (typingStyle.equals("Phone Thumbs")) {
-            bonus -= 0.03;
-        } else if (typingStyle.equals("Voice-to-Text")) {
-            bonus += 0.08;
+        // adjusts bonus based on typing style
+        switch (typingStyle) {
+            case "Touch Typist" -> bonus += 0.06;
+            case "Hunt & Peck" -> bonus -= 0.05;
+            case "Phone Thumbs" -> bonus -= 0.03;
+            case "Voice-to-Text" -> bonus += 0.08;
         }
 
+        // energy drink gives early boost but worse later
         if (energyDrink) {
             if (progress < passageLength / 2) {
                 bonus += 0.16;
@@ -47,53 +55,72 @@ public class TypistConfig {
         return bonus;
     }
 
-    public double getSpeedMultiplier() {
+    /**
+     * calculates the typing speed multiplier based on keyboard type
+     * different keyboards affect how fast the typist can type
+     *
+     * @return speed multiplier value
+     */
+    public double getSpeedMultiplier()
+    {
         double multiplier = 1.0;
 
-        if (keyboardType.equals("Mechanical")) {
-            multiplier *= 1.15;
-        } else if (keyboardType.equals("Membrane")) {
-            multiplier *= 1.00;
-        } else if (keyboardType.equals("Touchscreen")) {
-            multiplier *= 0.90;
-        } else if (keyboardType.equals("Stenography")) {
-            multiplier *= 1.40;
+        // adjust speed depending on keyboard type
+        switch (keyboardType) {
+            case "Mechanical" -> multiplier *= 1.15;
+            case "Membrane" -> multiplier *= 1.00;
+            case "Touchscreen" -> multiplier *= 0.90;
+            case "Stenography" -> multiplier *= 1.40;
         }
 
         return multiplier;
     }
 
-    public double getMistypeMultiplier() {
+    /**
+     * calculates the mistype multiplier based on keyboard type
+     * and whether headphones are used
+     * lower multiplier means fewer mistakes
+     *
+     * @return mistype multiplier value
+     */
+    public double getMistypeMultiplier()
+    {
         double multiplier = 1.0;
 
-        if (keyboardType.equals("Mechanical")) {
-            multiplier *= 0.90;
-        } else if (keyboardType.equals("Membrane")) {
-            multiplier *= 1.00;
-        } else if (keyboardType.equals("Touchscreen")) {
-            multiplier *= 1.25;
-        } else if (keyboardType.equals("Stenography")) {
-            multiplier *= 1.10;
+        // adjust mistype rate using switch for keyboard type
+        switch (keyboardType)
+        {
+            case "Mechanical" -> multiplier *= 0.90;
+            case "Membrane" -> multiplier *= 1.00;
+            case "Touchscreen" -> multiplier *= 1.25;
+            case "Stenography" -> multiplier *= 1.10;
         }
 
-        if (headphones) {
+        // headphones reduce mistakes
+        if (headphones)
+        {
             multiplier *= 0.70; // fewer mistypes
         }
 
         return multiplier;
     }
 
-    public double getBurnoutMultiplier() {
+    /**
+     * calculates the burnout multiplier based on typing style
+     * lower multiplier means less chance of burnout
+     *
+     * @return burnout multiplier value
+     */
+    public double getBurnoutMultiplier()
+    {
         double multiplier = 1.0;
 
-        if (typingStyle.equals("Touch Typist")) {
-            multiplier *= 0.90;
-        } else if (typingStyle.equals("Hunt & Peck")) {
-            multiplier *= 0.80;
-        } else if (typingStyle.equals("Phone Thumbs")) {
-            multiplier *= 1.20;
-        } else if (typingStyle.equals("Voice-to-Text")) {
-            multiplier *= 1.10;
+        // adjust burnout risk depending on typing style
+        switch (typingStyle) {
+            case "Touch Typist" -> multiplier *= 0.90;
+            case "Hunt & Peck" -> multiplier *= 0.80;
+            case "Phone Thumbs" -> multiplier *= 1.20;
+            case "Voice-to-Text" -> multiplier *= 1.10;
         }
 
         return multiplier;
@@ -101,7 +128,14 @@ public class TypistConfig {
 
 
 
-    public int getBurnoutDurationModifier() {
+    /**
+     * returns a modifier for burnout duration based on accessories
+     * wrist support reduces how long burnout lasts
+     *
+     * @return burnout duration modifier value
+     */
+    public int getBurnoutDurationModifier()
+    {
         if (wristSupport) {
             return -1;
         }

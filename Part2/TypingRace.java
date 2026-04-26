@@ -9,7 +9,7 @@ import java.util.Random;
  * @author Evleen Manghera
  * @version 1
  */
-public class Game {
+public class TypingRace {
 
     private int passageLength;
     private String passageText;
@@ -50,7 +50,7 @@ public class Game {
     private boolean raceSavedToHistory = false;
 
     // empty game object
-    public Game() {
+    public TypingRace() {
     }
 
     public void StartRace(GameConfig config, TypistConfig[] typistConfigs)
@@ -110,6 +110,9 @@ public class Game {
             typist.setConfig(typistConfigs[i]);
             typist.setColor(typistConfigs[i].getColour());
 
+            applyRankImpact(typist);
+            typist.setStartingAccuracy(typist.getAccuracy());
+
             addTypist(typist, i);
         }
     }
@@ -132,7 +135,8 @@ public class Game {
     /**
      * Resets the race state so that a new race can begin.
      */
-    public void resetRace(TypistConfig[] typistConfigs) {
+    public void resetRace(TypistConfig[] typistConfigs)
+    {
         turnCount = 0;
         finishPositionCounter = 0;
         finished = false;
@@ -150,22 +154,36 @@ public class Game {
 
         if (seats != null)
         {
-            for (int i = 0; i < numberOfSeats; i++) {
-                if (seats[i] != null) {
+            for (int i = 0; i < numberOfSeats; i++)
+            {
+                if (seats[i] != null)
+                {
                     seats[i].resetToStart();
-
-                    if (typistConfigs != null && i < typistConfigs.length) {
-                        seats[i].setColor(typistConfigs[i].getColour());
-                    }
                 }
             }
         }
 
-        //reset names
-        for (Names names : name) {
+        resetTypistColors(typistConfigs);
+
+        // reset names
+        for (Names names : name)
+        {
             names.setUsed(false);
         }
+    }
 
+    public void resetTypistColors(TypistConfig[] typistConfigs)
+    {
+        if (seats != null && typistConfigs != null)
+        {
+            for (int i = 0; i < numberOfSeats; i++)
+            {
+                if (seats[i] != null && i < typistConfigs.length)
+                {
+                    seats[i].setColor(typistConfigs[i].getColour());
+                }
+            }
+        }
     }
 
     /**
@@ -446,5 +464,28 @@ public class Game {
             return " N/A";
         }
         return msg;
+    }
+
+
+
+
+    private void applyRankImpact(Typist typist)
+    {
+        if (raceStats == null)
+        {
+            return;
+        }
+
+        int points = raceStats.getCumulativePoints(typist.getName());
+
+        // champions face higher expectations
+        if (points >= 25)
+        {
+            typist.setAccuracy(typist.getAccuracy() - 0.04);
+        }
+        else if (points >= 15)
+        {
+            typist.setAccuracy(typist.getAccuracy() - 0.02);
+        }
     }
 }

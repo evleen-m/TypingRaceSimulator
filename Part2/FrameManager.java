@@ -1,14 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
 
+
 /**
- * GUI controller for the typing race.
- * Uses composition instead of extending JFrame.
+ * gui controller for the typing race
+ * handles screen switching and race controls
+ *
  */
-public class FrameManager
-{
+public class FrameManager {
     private JFrame frame;
-    private Game race;
+    private TypingRace race;
     private RacePanel racePanel;
     private Timer timer;
     private JLabel statusLabel;
@@ -22,8 +23,7 @@ public class FrameManager
     private TypistConfig[] typistConfigs;
     private JButton statsButton;
 
-    public FrameManager(Game game)
-    {
+    public FrameManager(TypingRace game) {
         race = game;
 
         // set up frame for all panels to be within
@@ -57,29 +57,22 @@ public class FrameManager
             racePanel.repaintRace();
 
             // stops on the next fframe so can see who won
-            if (stopNextTick)
-            {
+            if (stopNextTick) {
                 timer.stop();
                 stopNextTick = false;
                 return;
             }
 
-            if (race.isFinished())
-            {
+            if (race.isFinished()) {
                 stopNextTick = true;
                 statsButton.setVisible(true);
 
-                if (race.getWinner() != null)
-                {
+                if (race.getWinner() != null) {
                     statusLabel.setText("Winner: " + race.getWinner().getName());
-                }
-                else
-                {
+                } else {
                     statusLabel.setText("Race finished.");
                 }
-            }
-            else
-            {
+            } else {
                 statusLabel.setText("Race in progress...");
             }
         });
@@ -88,10 +81,9 @@ public class FrameManager
     }
 
     /**
-     * Builds the menu bar.
+     * builds the menu bar at the top of the window
      */
-    private void buildMenuBar()
-    {
+    private void buildMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu gameMenu = new JMenu("Game");
@@ -101,8 +93,7 @@ public class FrameManager
 
         // action if setup selected
         setupItem.addActionListener(e -> {
-            if (timer != null)
-            {
+            if (timer != null) {
                 timer.stop();
             }
             cardLayout.show(mainPanel, "MENU");
@@ -121,12 +112,11 @@ public class FrameManager
     }
 
     /**
-     * Builds the race screen panel.
+     * builds the main race screen with race display and controls
      *
-     * @return the race screen panel
+     * @return panel containing the race screen
      */
-    private JPanel buildRaceScreen()
-    {
+    private JPanel buildRaceScreen() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(racePanel.getPanel(), BorderLayout.CENTER);
         panel.add(buildControls(), BorderLayout.SOUTH);
@@ -134,12 +124,12 @@ public class FrameManager
     }
 
     /**
-     * Builds the control panel.
+     * builds the control buttons for the race
+     * includes start pause step reset setup and stats
      *
-     * @return the control panel
+     * @return panel containing race controls
      */
-    private JPanel buildControls()
-    {
+    private JPanel buildControls() {
         // button container panels
         JPanel buttonFooter = new JPanel(new BorderLayout());
         JPanel buttons = new JPanel(new FlowLayout());
@@ -154,8 +144,7 @@ public class FrameManager
 
         // action if start clicked
         startButton.addActionListener(e -> {
-            if (!race.isFinished())
-            {
+            if (!race.isFinished()) {
                 stopNextTick = false;
                 timer.start();
                 statusLabel.setText("Race in progress...");
@@ -170,26 +159,19 @@ public class FrameManager
 
         // action if step is clicked
         stepButton.addActionListener(e -> {
-            if (!race.isFinished())
-            {
+            if (!race.isFinished()) {
                 race.advanceOneTurn();
                 racePanel.repaintRace();
 
-                if (race.isFinished())
-                {
+                if (race.isFinished()) {
                     statsButton.setVisible(true);
 
-                    if (race.getWinner() != null)
-                    {
+                    if (race.getWinner() != null) {
                         statusLabel.setText("Winner: " + race.getWinner().getName());
-                    }
-                    else
-                    {
+                    } else {
                         statusLabel.setText("Race finished.");
                     }
-                }
-                else
-                {
+                } else {
                     statusLabel.setText("Advanced one turn.");
                 }
             }
@@ -213,6 +195,7 @@ public class FrameManager
 
         //action if stats is clicked
         statsButton.addActionListener(e -> {
+            race.resetTypistColors(typistConfigs);
             showStats();
         });
 
@@ -232,62 +215,14 @@ public class FrameManager
         return buttonFooter;
     }
 
-    /**
-     * Shows the GUI window.
-     */
-    public void show()
-    {
-        frame.setVisible(true);
-    }
 
     /**
-     * Opens the typist configuration screen.
+     * starts the race using selected config and typists
      *
-     * @param config the selected game config
+     * @param config        the selected game config
+     * @param typistConfigs the typist setup data
      */
-    public void openTypistConfig(GameConfig config)
-    {
-        typistConfigPanel.buildPanel(config);
-
-        mainPanel.add(typistConfigPanel.getPanel(), "TYPECONFIG");
-        cardLayout.show(mainPanel, "TYPECONFIG");
-    }
-
-    /**
-     * Shows the menu screen.
-     */
-    public void showMenu()
-    {
-        cardLayout.show(mainPanel, "MENU");
-    }
-
-    /**
-     * Shows the race screen.
-     */
-    public void showRace()
-    {
-        cardLayout.show(mainPanel, "RACE");
-    }
-
-    /**
-     * Shows the stats screen.
-     */
-    public void showStats()
-    {
-        statsPanel = new StatsPanel(this, race);
-        statsPanel.buildPanel();
-
-        mainPanel.add(statsPanel.getPanel(), "STATS");
-        cardLayout.show(mainPanel, "STATS");
-    }
-
-    /**
-     * Starts the race with the configured passage and typists.
-     *
-     * @param config the selected game config
-     */
-    public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs)
-    {
+    public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs) {
         this.typistConfigs = typistConfigs;
         // race.resetRace(typistConfigs); -> called in start race
         statsButton.setVisible(false);
@@ -297,4 +232,34 @@ public class FrameManager
         statusLabel.setText("Ready.");
         cardLayout.show(mainPanel, "RACE");
     }
+
+    public void show() {
+        frame.setVisible(true);
+    }
+
+
+    public void openTypistConfig(GameConfig config) {
+        typistConfigPanel.buildPanel(config);
+
+        mainPanel.add(typistConfigPanel.getPanel(), "TYPECONFIG");
+        cardLayout.show(mainPanel, "TYPECONFIG");
+    }
+
+
+    public void showMenu() {
+        cardLayout.show(mainPanel, "MENU");
+    }
+
+    public void showRace() {
+        cardLayout.show(mainPanel, "RACE");
+    }
+
+    public void showStats() {
+        statsPanel = new StatsPanel(this, race);
+        statsPanel.buildPanel();
+
+        mainPanel.add(statsPanel.getPanel(), "STATS");
+        cardLayout.show(mainPanel, "STATS");
+    }
+
 }
