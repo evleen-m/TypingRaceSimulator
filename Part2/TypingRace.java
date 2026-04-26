@@ -304,7 +304,7 @@ public class TypingRace {
                 theTypist.recordCorrectKeystroke();
             }
 
-            // Caffeine Mode: speed boost for the first 10 turns
+            // caffeine mode -> speed boost for the first 10 turns
             if (coffeeModeOn && turnCount <= 10) {
                 if (Math.random() < 0.7) {
                     int typed2 = typeWithSpeed(theTypist, speedMultiplier);
@@ -318,19 +318,24 @@ public class TypingRace {
 
         }
 
-        double currentBurnoutRisk = burnoutRisk * accuracy * accuracy;
+        //burnout increaes with accuracy
+        double currentBurnoutRisk = burnoutRisk * (0.5 + accuracy * 0.5);
+        currentBurnoutRisk = Math.min(0.5, currentBurnoutRisk);
 
-        if (config != null) {
+        // caffeine mode -> after 10 turns, burnout risk increases
+        if (coffeeModeOn && turnCount > 10) {
+            double fatigue = (turnCount - 10) * 0.02;
+            currentBurnoutRisk *= (1 + fatigue);
+        }
+
+
+        if (config != null)
+        {
             currentBurnoutRisk = currentBurnoutRisk * config.getBurnoutMultiplier();
         }
 
-        // Caffeine Mode: after 10 turns, burnout risk increases exponentially
-        if (coffeeModeOn && turnCount > 10) {
-            currentBurnoutRisk = currentBurnoutRisk * 3;
-        }
-
         if (Math.random() < currentBurnoutRisk) {
-            theTypist.setAccuracy(theTypist.getAccuracy() - 0.04);
+            theTypist.setAccuracy(theTypist.getAccuracy() - 0.02);
 
             // check if writst support -> decrease burnout turns by one if there is
             int duration = BURNOUT_DURATION;

@@ -225,7 +225,7 @@ public class StatsPanel {
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JComboBox<String> metricBox = new JComboBox<>(new String[]{"WPM", "Accuracy", "Burnouts", "Finish Position", "Accuracy Change", "Personal Best WPM"});
+        JComboBox<String> metricBox = new JComboBox<>(new String[]{"WPM", "Accuracy", "Burnouts", "Finish Position"});
 
         controls.add(new JLabel("Compare by:"));
         controls.add(metricBox);

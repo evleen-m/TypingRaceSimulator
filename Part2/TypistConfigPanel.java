@@ -227,7 +227,7 @@ public class TypistConfigPanel {
         row.add(colourButtons[index], c);
 
         // small helper text explaining effects (not dynamic just info)
-        JLabel impactLabel = new JLabel("Typing Style affects accuracy/burnout.  Keyboard affects mistypes.  Accessories add bonuses.");
+        JLabel impactLabel = new JLabel("Typing Style affects accuracy + burnout.  Keyboard affects speed + mistypes.  Accessories add bonuses.");
 
         impactLabel.setFont(impactLabel.getFont().deriveFont(12f));
         impactLabel.setForeground(new Color(90, 90, 90));
@@ -270,10 +270,10 @@ public class TypistConfigPanel {
         // typing style info
         infoPanel.add(createInfoSection(
                 "Typing Styles",
-                "Touch Typist: Higher accuracy, lower burnout risk.\n" +
-                        "Hunt & Peck: lower accuracy but safer.\n" +
-                        "Phone Thumbs: slightly worse accuracy, more burnout.\n" +
-                        "Voice-to-text: high accuracy but a bit unstable."
+                "Touch Typist: Slightly high accuracy but increased burnout risk.\n" +
+                        "Hunt & Peck: Slightly lower accuracy and burnout risk - most balanced style.\n" +
+                        "Phone Thumbs: Worse accuracy but lower burnout risk.\n" +
+                        "Voice-to-text: Much higher accuracy with a much higher burnout risk."
         ));
 
         infoPanel.add(Box.createVerticalStrut(12));
@@ -281,10 +281,10 @@ public class TypistConfigPanel {
         // keyboard info
         infoPanel.add(createInfoSection(
                 "Keyboard Types",
-                "Mechanical: Faster typing, less mistakes.\n" +
-                        "Membrane: normal balanced option.\n" +
-                        "Touchscreen: slower and more mistakes.\n" +
-                        "Stenography: Very fast typing speed."
+                "Mechanical: Faster typing, mistakes more likely.\n" +
+                        "Membrane: Slower speed but fewer mistakes.\n" +
+                        "Touchscreen: Most balanced option.\n" +
+                        "Stenography: Very fast typing speed but also makes lots of mistakes."
         ));
 
         infoPanel.add(Box.createVerticalStrut(12));
@@ -292,9 +292,9 @@ public class TypistConfigPanel {
         // accessories info
         infoPanel.add(createInfoSection(
                 "Accessories",
-                "Wrist Support: reduces burnout duration.\n" +
-                        "Energy Drink: better early, worse later.\n" +
-                        "Noise Cancelling Headphones: reduces mistakes."
+                "Wrist Support: Reduces burnout duration.\n" +
+                        "Energy Drink: Accuracy increases for a short duration, worsens after this.\n" +
+                        "Noise Cancelling Headphones: Reduces mistakes made."
         ));
 
         infoPanel.add(Box.createVerticalStrut(12));
@@ -302,8 +302,8 @@ public class TypistConfigPanel {
         // symbol + colour info
         infoPanel.add(createInfoSection(
                 "Symbol & Colour",
-                "Symbol: what appears on the race track.\n" +
-                        "Colour: changes typist icon and text highlight."
+                "Symbol: Your personal symbol that appears on the race track.\n" +
+                        "Colour: Changes typist icon and text highlight."
         ));
 
         return infoPanel;

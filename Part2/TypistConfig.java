@@ -12,6 +12,7 @@ public class TypistConfig {
     private boolean headphones;
 
     public TypistConfig() {
+        // default values can be changed
         typingStyle = "Touch Typist";
         keyboardType = "Membrane";
 
@@ -39,7 +40,7 @@ public class TypistConfig {
         switch (typingStyle) {
             case "Touch Typist" -> bonus += 0.06;
             case "Hunt & Peck" -> bonus -= 0.05;
-            case "Phone Thumbs" -> bonus -= 0.03;
+            case "Phone Thumbs" -> bonus -= 0.08;
             case "Voice-to-Text" -> bonus += 0.08;
         }
 
@@ -68,8 +69,8 @@ public class TypistConfig {
         // adjust speed depending on keyboard type
         switch (keyboardType) {
             case "Mechanical" -> multiplier *= 1.15;
-            case "Membrane" -> multiplier *= 1.00;
-            case "Touchscreen" -> multiplier *= 0.90;
+            case "Membrane" -> multiplier *= 0.80;
+            case "Touchscreen" -> multiplier *= 0.95;
             case "Stenography" -> multiplier *= 1.40;
         }
 
@@ -90,16 +91,16 @@ public class TypistConfig {
         // adjust mistype rate using switch for keyboard type
         switch (keyboardType)
         {
-            case "Mechanical" -> multiplier *= 0.90;
-            case "Membrane" -> multiplier *= 1.00;
-            case "Touchscreen" -> multiplier *= 1.25;
-            case "Stenography" -> multiplier *= 1.10;
+            case "Mechanical" -> multiplier *= 1.30;
+            case "Membrane" -> multiplier *= 0.80;
+            case "Touchscreen" -> multiplier *= 1.05;
+            case "Stenography" -> multiplier *= 1.80;
         }
 
         // headphones reduce mistakes
         if (headphones)
         {
-            multiplier *= 0.70; // fewer mistypes
+            multiplier *= 0.85; // fewer mistypes
         }
 
         return multiplier;
@@ -115,12 +116,11 @@ public class TypistConfig {
     {
         double multiplier = 1.0;
 
-        // adjust burnout risk depending on typing style
         switch (typingStyle) {
-            case "Touch Typist" -> multiplier *= 0.90;
-            case "Hunt & Peck" -> multiplier *= 0.80;
-            case "Phone Thumbs" -> multiplier *= 1.20;
-            case "Voice-to-Text" -> multiplier *= 1.10;
+            case "Touch Typist" -> multiplier *= 1.10;
+            case "Hunt & Peck" -> multiplier *= 0.95;
+            case "Phone Thumbs" -> multiplier *= 0.80;
+            case "Voice-to-Text" -> multiplier *= 1.20;
         }
 
         return multiplier;
@@ -175,24 +175,12 @@ public class TypistConfig {
         this.colour = colour;
     }
 
-    public boolean hasWristSupport() {
-        return wristSupport;
-    }
-
     public void setWristSupport(boolean wristSupport) {
         this.wristSupport = wristSupport;
     }
 
-    public boolean hasEnergyDrink() {
-        return energyDrink;
-    }
-
     public void setEnergyDrink(boolean energyDrink) {
         this.energyDrink = energyDrink;
-    }
-
-    public boolean hasHeadphones() {
-        return headphones;
     }
 
     public void setHeadphones(boolean headphones) {

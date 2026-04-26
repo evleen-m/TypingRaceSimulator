@@ -201,6 +201,7 @@ public class MenuPanel
 
         c.gridy = 2;
 
+        c.gridx = 0;
         card.add(createSmallText("Halves slide-back after mistypes."), c);
         c.gridx = 1;
         card.add(createSmallText("Early speed boost, later burnout risk."), c);

@@ -5,7 +5,6 @@ import java.util.Objects;
 
 /**
  * builds and manages the race display panel
- * uses composition instead of extending JPanel
  */
 public class RacePanel {
     private TypingRace race;
@@ -76,7 +75,7 @@ public class RacePanel {
             lanesPanel.add(winner);
 
             JLabel accuracy = new JLabel("Final accuracy: " + String.format("%.2f", race.getWinner().getAccuracy())
-                    + " improved from: " + String.format("%.2f", race.getWinner().getINITAL_ACCURACY()));
+                    + " changed from: " + String.format("%.2f", race.getWinner().getINITAL_ACCURACY()));
             accuracy.setForeground(new Color(0, 130, 60));
             accuracy.setFont(new Font("SansSerif", Font.BOLD, 22));
             accuracy.setBorder(BorderFactory.createEmptyBorder(0, 25, 20, 25));
