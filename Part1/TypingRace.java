@@ -80,7 +80,9 @@ public class TypingRace
 
         // Reset all typists to the start of the passage
         for  (int i = 1; i < numberOfSeats; i++){
+            if (seats[i] != null){
             seats[i].resetToStart();
+            }
         }
 
         //game loop
@@ -90,8 +92,10 @@ public class TypingRace
             // Advance each typist by one turn
             for  (int i = 1; i < numberOfSeats; i++){
                 // remove mistyped marker
-                seats[i].setJustMistyped(false);
-                advanceTypist(seats[i]);
+                if (seats[i] != null){
+                    seats[i].setJustMistyped(false);
+                    advanceTypist(seats[i]);
+                }
             }
 
             // Print the current state of the race
@@ -100,9 +104,11 @@ public class TypingRace
             // Check if any typist has finished the passage
             // Check for winner
             for  (int i = 1; i < numberOfSeats; i++){
-                if(raceFinishedBy(seats[i])){
-                    winner = seats[i];
-                    finished = true;
+                if (seats[i] != null){
+                    if(raceFinishedBy(seats[i])){
+                        winner = seats[i];
+                        finished = true;
+                    }
                 }
             }
 
@@ -192,8 +198,10 @@ public class TypingRace
         System.out.println();
 
         for  (int i = 1; i < numberOfSeats; i++){
-            printSeat(seats[i]);
-            System.out.println();
+            if (seats[i] != null){
+                printSeat(seats[i]);
+                System.out.println();
+            }
         }
 
         multiplePrint('=', passageLength + 3);
