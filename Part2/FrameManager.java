@@ -1,0 +1,265 @@
+import javax.swing.*;
+import java.awt.*;
+
+
+/**
+ * gui controller for the typing race
+ * handles screen switching and race controls
+ *
+ */
+public class FrameManager {
+    private JFrame frame;
+    private TypingRace race;
+    private RacePanel racePanel;
+    private Timer timer;
+    private JLabel statusLabel;
+
+    private CardLayout cardLayout;
+    private JPanel mainPanel;
+    private boolean stopNextTick = false;
+
+    private TypistConfigPanel typistConfigPanel;
+    private StatsPanel statsPanel;
+    private TypistConfig[] typistConfigs;
+    private JButton statsButton;
+
+    public FrameManager(TypingRace game) {
+        race = game;
+
+        // set up frame for all panels to be within
+        frame = new JFrame("Typing Race GAME");
+        frame.setSize(1500, 900);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+
+        // set up menu bar (proper Swing structure)
+        buildMenuBar();
+
+        // set up switching between panels -> create main panel
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
+
+        // create menu panel, typist config panel and race panel
+        MenuPanel menuPanel = new MenuPanel(this);
+        typistConfigPanel = new TypistConfigPanel(this);
+        racePanel = new RacePanel(race);
+
+        // set up the cardlayout switcher
+        mainPanel.add(menuPanel.getPanel(), "MENU");
+        mainPanel.add(buildRaceScreen(), "RACE");
+
+        // add the panels to frame
+        frame.setContentPane(mainPanel);
+
+        // game loop controls
+        timer = new Timer(200, e -> {
+            race.advanceOneTurn();
+            racePanel.repaintRace();
+
+            // stops on the next fframe so can see who won
+            if (stopNextTick) {
+                timer.stop();
+                stopNextTick = false;
+                return;
+            }
+
+            if (race.isFinished()) {
+                stopNextTick = true;
+                statsButton.setVisible(true);
+
+                if (race.getWinner() != null) {
+                    statusLabel.setText("Winner: " + race.getWinner().getName());
+                } else {
+                    statusLabel.setText("Race finished.");
+                }
+            } else {
+                statusLabel.setText("Race in progress...");
+            }
+        });
+
+        cardLayout.show(mainPanel, "MENU");
+    }
+
+    /**
+     * builds the menu bar at the top of the window
+     */
+    private void buildMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu gameMenu = new JMenu("Game");
+
+        JMenuItem setupItem = new JMenuItem("Back to Setup");
+        JMenuItem exitItem = new JMenuItem("Exit");
+
+        // action if setup selected
+        setupItem.addActionListener(e -> {
+            if (timer != null) {
+                timer.stop();
+            }
+            cardLayout.show(mainPanel, "MENU");
+        });
+
+        // action if exit selected
+        exitItem.addActionListener(e -> frame.dispose());
+
+        gameMenu.add(setupItem);
+        gameMenu.addSeparator();
+        gameMenu.add(exitItem);
+
+        menuBar.add(gameMenu);
+
+        frame.setJMenuBar(menuBar);
+    }
+
+    /**
+     * builds the main race screen with race display and controls
+     *
+     * @return panel containing the race screen
+     */
+    private JPanel buildRaceScreen() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(racePanel.getPanel(), BorderLayout.CENTER);
+        panel.add(buildControls(), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    /**
+     * builds the control buttons for the race
+     * includes start pause step reset setup and stats
+     *
+     * @return panel containing race controls
+     */
+    private JPanel buildControls() {
+        // button container panels
+        JPanel buttonFooter = new JPanel(new BorderLayout());
+        JPanel buttons = new JPanel(new FlowLayout());
+
+        JButton startButton = new JButton("Start");
+        JButton pauseButton = new JButton("Pause");
+        JButton stepButton = new JButton("Step");
+        JButton resetButton = new JButton("Reset");
+        JButton setupButton = new JButton("Back to Setup");
+        statsButton = new JButton("Stats");
+        statsButton.setVisible(false);
+
+        // action if start clicked
+        startButton.addActionListener(e -> {
+            if (!race.isFinished()) {
+                stopNextTick = false;
+                timer.start();
+                statusLabel.setText("Race in progress...");
+            }
+        });
+
+        // action if pause clicked
+        pauseButton.addActionListener(e -> {
+            timer.stop();
+            statusLabel.setText("Paused.");
+        });
+
+        // action if step is clicked
+        stepButton.addActionListener(e -> {
+            if (!race.isFinished()) {
+                race.advanceOneTurn();
+                racePanel.repaintRace();
+
+                if (race.isFinished()) {
+                    statsButton.setVisible(true);
+
+                    if (race.getWinner() != null) {
+                        statusLabel.setText("Winner: " + race.getWinner().getName());
+                    } else {
+                        statusLabel.setText("Race finished.");
+                    }
+                } else {
+                    statusLabel.setText("Advanced one turn.");
+                }
+            }
+        });
+
+        // action if reset is clicked
+        resetButton.addActionListener(e -> {
+            timer.stop();
+            stopNextTick = false;
+            statsButton.setVisible(false);
+            race.resetRace(typistConfigs);
+            racePanel.repaintRace();
+            statusLabel.setText("Race reset.");
+        });
+
+        // action if setup is clicked
+        setupButton.addActionListener(e -> {
+            timer.stop();
+            cardLayout.show(mainPanel, "MENU");
+        });
+
+        //action if stats is clicked
+        statsButton.addActionListener(e -> {
+            race.resetTypistColors(typistConfigs);
+            showStats();
+        });
+
+        // add buttons to the button specific panel
+        buttons.add(startButton);
+        buttons.add(pauseButton);
+        buttons.add(stepButton);
+        buttons.add(resetButton);
+        buttons.add(setupButton);
+        buttons.add(statsButton);
+
+        statusLabel = new JLabel("Ready.");
+
+        buttonFooter.add(buttons, BorderLayout.NORTH);
+        buttonFooter.add(statusLabel, BorderLayout.SOUTH);
+
+        return buttonFooter;
+    }
+
+
+    /**
+     * starts the race using selected config and typists
+     *
+     * @param config        the selected game config
+     * @param typistConfigs the typist setup data
+     */
+    public void startConfiguredRace(GameConfig config, TypistConfig[] typistConfigs) {
+        this.typistConfigs = typistConfigs;
+        // race.resetRace(typistConfigs); -> called in start race
+        statsButton.setVisible(false);
+        stopNextTick = false;
+        race.StartRace(config, typistConfigs);
+        racePanel.repaintRace();
+        statusLabel.setText("Ready.");
+        cardLayout.show(mainPanel, "RACE");
+    }
+
+    public void show() {
+        frame.setVisible(true);
+    }
+
+
+    public void openTypistConfig(GameConfig config) {
+        typistConfigPanel.buildPanel(config);
+
+        mainPanel.add(typistConfigPanel.getPanel(), "TYPECONFIG");
+        cardLayout.show(mainPanel, "TYPECONFIG");
+    }
+
+
+    public void showMenu() {
+        cardLayout.show(mainPanel, "MENU");
+    }
+
+    public void showRace() {
+        cardLayout.show(mainPanel, "RACE");
+    }
+
+    public void showStats() {
+        statsPanel = new StatsPanel(this, race);
+        statsPanel.buildPanel();
+
+        mainPanel.add(statsPanel.getPanel(), "STATS");
+        cardLayout.show(mainPanel, "STATS");
+    }
+
+}
